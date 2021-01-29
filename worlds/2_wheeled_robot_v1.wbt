@@ -1,0 +1,189 @@
+#VRML_SIM R2021a utf8
+WorldInfo {
+  basicTimeStep 16
+  coordinateSystem "NUE"
+}
+Viewpoint {
+  orientation 0.16674384103634884 0.9476009016957436 0.2724867383596096 4.19256418942625
+  position -0.23432123612608227 0.17552965364526973 -0.23444240038030217
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+Floor {
+  size 1 1
+}
+Robot {
+  translation -0.0428567 0.09 -0.0785476
+  rotation 0 1 0 -3.1415853071795863
+  children [
+    Camera {
+      translation 0 0.025 0.1
+    }
+    Solid {
+      translation 0 -0.03 0
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 0 0 0
+          }
+          geometry DEF CASTOR_BALL Sphere {
+            radius 0.01
+          }
+        }
+      ]
+      name "solid(2)"
+      contactMaterial "slippy"
+      boundingObject USE CASTOR_BALL
+      physics Physics {
+      }
+    }
+    DEF BODY Shape {
+      appearance PBRAppearance {
+        baseColor 0 0.5 1
+        metalness 0
+      }
+      geometry Box {
+        size 0.1 0.05 0.2
+      }
+    }
+    DEF WHEEL1 HingeJoint {
+      jointParameters HingeJointParameters {
+        anchor 0.06 0 0.05
+      }
+      device [
+        RotationalMotor {
+          name "wheel1"
+          maxTorque 100
+        }
+      ]
+      endPoint Solid {
+        translation 0.06 0 0.05
+        rotation 0 0 1 1.5707963071795863
+        children [
+          DEF WHEEL Shape {
+            appearance PBRAppearance {
+              baseColor 0.305882 0.898039 0.250981
+              roughness 1
+              metalness 0
+            }
+            geometry Cylinder {
+              height 0.02
+              radius 0.04
+              subdivision 24
+            }
+          }
+        ]
+        boundingObject USE WHEEL
+        physics Physics {
+        }
+      }
+    }
+    DEF WHEEL2 HingeJoint {
+      jointParameters HingeJointParameters {
+        anchor -0.06 0 0.05
+      }
+      device [
+        RotationalMotor {
+          name "wheel2"
+          maxTorque 100
+        }
+      ]
+      endPoint Solid {
+        translation -0.06 0 0.05
+        rotation 0 0 -1 1.5707963271795862
+        children [
+          USE WHEEL
+        ]
+        name "solid(1)"
+        boundingObject USE WHEEL
+        physics Physics {
+        }
+      }
+    }
+    DEF DS_RIGHT DistanceSensor {
+      translation -0.03 0.025 0.1
+      rotation 0 1 0 -1.5708
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 1 0 1
+            metalness 0
+          }
+          geometry Box {
+            size 0.01 0.01 0.01
+          }
+        }
+      ]
+      name "ds_right"
+    }
+    DEF DS_LEFT DistanceSensor {
+      translation 0.03 0.025 0.1
+      rotation 0 1 0 -1.5709
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 1 0 1
+            roughness 1
+            metalness 0
+          }
+          geometry Box {
+            size 0.01 0.01 0.01
+          }
+        }
+      ]
+      name "ds_left"
+    }
+    Solid {
+      translation 0.0475 -0.02 0.125
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 0 0.5 1
+            metalness 0
+          }
+          geometry DEF ARM Box {
+            size 0.005 0.03 0.05
+          }
+        }
+      ]
+      name "solid(3)"
+      boundingObject USE ARM
+      physics Physics {
+      }
+    }
+    Solid {
+      translation -0.0475 -0.02 0.125
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 0 0.5 1
+            metalness 0
+          }
+          geometry USE ARM
+        }
+      ]
+      name "solid(4)"
+      boundingObject USE ARM
+      physics Physics {
+      }
+    }
+    Compass {
+      translation 0 0.025 0.1
+    }
+    GPS {
+      translation 0 0.025 0.1
+    }
+    Emitter {
+      translation 0 0.025 0.1
+    }
+    Receiver {
+      translation 0 0.025 0.1
+    }
+  ]
+  name "robot(1)"
+  boundingObject USE BODY
+  physics Physics {
+  }
+}
