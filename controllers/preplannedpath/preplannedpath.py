@@ -1,8 +1,8 @@
 """preplannedpath controller."""
 
 # You may need to import some classes of the controller module. Ex:
-from controller import Robot, Motor, GPS
-from subdir.functions import getBearing, getDistanceandRotation
+from controller import Robot, Motor, DistanceSensor, GPS
+from subdir.functions import getBearing, getDistanceandRotation, moveTo
 import math
 import numpy as np
 
@@ -28,6 +28,10 @@ gps.enable(TIME_STEP)
 compass = robot.getDevice('compass')
 compass.enable(TIME_STEP)
 
+ds_left = robot.getDevice('ds_left')
+ds_left.enable(TIME_STEP)
+ds_right = robot.getDevice('ds_right')
+ds_right.enable(TIME_STEP)
 
 path = [[1,0,1], [1,0,1],[0,0,1],[0,0,0],[-1,0,0],[-1,0,-1],[0,0,-1],[0,0,0],[-1,0,0],[0,0,1],[1,0,-0.8]] # always duplicate first point
 i = 0
@@ -40,55 +44,35 @@ while robot.step(TIME_STEP) != -1:
     if i == len(path)-2:
         print('reached the end')
         break
-    # calculating distance between the desired coordinate and current coordinate 
-    desired_coordinates = path[i+2]
+
+    # get current device values
     current_coordinates = gps.getValues()
-    coordinates_list = [previous_coordinates,current_coordinates,desired_coordinates]
-    distance, x = getDistanceandRotation(coordinates_list)
-
-    # calculating desired bearing to get to desired coordinate from current coordinate 
-    ref_coordinates = [current_coordinates[0]+1, current_coordinates[1] , current_coordinates[2]] # to make previous vector always be [-1,0,0]
-    coordinates_list2 = [ref_coordinates,current_coordinates,desired_coordinates]
-    x,angle = getDistanceandRotation(coordinates_list2)
-    print('angle',angle)
-    desired_bearing = angle + 180 
-    
-    print(i,distance, desired_bearing)
-
     north = compass.getValues()
     current_bearing = getBearing(north)
-    bearing_error = desired_bearing - current_bearing
-    print('bearing error', bearing_error)
+    ds_leftvalue = ds_left.getValue()
+    ds_rightvalue = ds_right.getValue()
+
+    # detect obstacles
+    right_obstacle = ds_rightvalue < 300.0
+    left_obstacle = ds_leftvalue < 300.0
+    
+    #if theres a new point that you want to robot to go to that is not on the original path,
+    #insert in the i+2 location in the path
+    #example of left obstacle (just an example)
+    if current_bearing > 145 and current_bearing < 225: #facing south
+        if left_obstacle == True: # set new coordinte to have a reduced z coordinate
+            new_coordinates = [current_coordinates[0], current_coordinates[1], current_coordinates[2]-0.4]
+            path.insert(i+2,new_coordinates)
+            print('path edited')
+
+    # calculating distance between the desired coordinate and current coordinate 
+    desired_coordinates = path[i+2]
+    
     MAX_SPEED = 6.28
     
-    if bearing_error > 180:
-        bearing_error -= 360 
-    elif bearing_error < -180:
-        bearing_error += 360
-
-    if bearing_error < 1 and bearing_error > -1:
-        if distance < 0.1:
-            leftSpeed  = 0
-            rightSpeed = 0
-            leftMotor.setVelocity(leftSpeed)
-            rightMotor.setVelocity(rightSpeed)
-            i += 1
-        else:
-            leftSpeed  = 0.5 * MAX_SPEED
-            rightSpeed = 0.5 * MAX_SPEED
-            leftMotor.setVelocity(leftSpeed)
-            rightMotor.setVelocity(rightSpeed)
-    elif bearing_error >= 1: #rotate right
-            leftSpeed  = 0.5 * MAX_SPEED
-            rightSpeed = -0.5 * MAX_SPEED
-            leftMotor.setVelocity(leftSpeed)
-            rightMotor.setVelocity(rightSpeed)
-    elif bearing_error <= -1: #rotate left
-            leftSpeed  = -0.5 * MAX_SPEED
-            rightSpeed = 0.5 * MAX_SPEED
-            leftMotor.setVelocity(leftSpeed)
-            rightMotor.setVelocity(rightSpeed)
-
+    leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i)
+    leftMotor.setVelocity(leftSpeed)
+    rightMotor.setVelocity(rightSpeed)
     previous_coordinates = current_coordinates
 
     

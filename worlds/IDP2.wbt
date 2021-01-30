@@ -18,8 +18,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.2372202942693965 -0.9254009132744493 -0.29556671276981855 2.065049274516586
-  position -3.4378485194603 2.824021822366229 -1.7502130953989008
+  orientation -0.194753686543591 -0.9599547755815605 -0.2013897475440012 1.9272635712719994
+  position -3.4147099914986345 1.6807147732580354 -1.043178718666688
 }
 TexturedBackground {
 }
@@ -39,7 +39,7 @@ DEF Block_R1 Solid {
         metalness 0
       }
       geometry Box {
-        size 0.05 0.05 0.05
+        size 0.1 0.1 0.1
       }
     }
   ]
@@ -50,7 +50,7 @@ DEF Block_R1 Solid {
   }
 }
 DEF Block_R2 Solid {
-  translation 1 0.05 0.3
+  translation 0.496365 0.05 1.05927
   children [
     USE BOX_R
   ]
@@ -416,8 +416,8 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation 0.06 0 0.05
-        rotation -4.0108820848066866e-10 4.0108820848066866e-10 1 1.5707963071795803
+        translation 0.060061096231712297 -6.023306508778913e-05 0.049973930669938375
+        rotation -0.0008004404636122508 0.0014088583283205132 0.9999986872057759 1.570898955933666
         children [
           DEF WHEEL Shape {
             appearance PBRAppearance {
@@ -448,8 +448,8 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation -0.06 0 0.05
-        rotation 7.30092993147529e-15 7.614948423151647e-15 -1 1.570796327179577
+        translation -0.060076793877242296 -3.720246855932564e-05 0.05002516694116893
+        rotation -0.0006167589520926097 -0.0017728202341673034 -0.9999982383568545 1.5702551333129804
         children [
           USE WHEEL
         ]
@@ -474,6 +474,10 @@ Robot {
         }
       ]
       name "ds_right"
+      lookupTable [
+        0 0 0
+        0.5 1000 0
+      ]
     }
     DEF DS_LEFT DistanceSensor {
       translation 0.03 0.025 0.1
@@ -491,6 +495,10 @@ Robot {
         }
       ]
       name "ds_left"
+      lookupTable [
+        0 0 0
+        0.5 1000 0
+      ]
     }
     Solid {
       translation 0.0475 -0.02 0.125
