@@ -370,6 +370,7 @@ Robot {
   boundingObject USE BODY
   physics Physics {
   }
+  controller "receiver"
 }
 Robot {
   translation 1 0 1
@@ -417,7 +418,7 @@ Robot {
       ]
       endPoint Solid {
         translation 0.060061096231712297 -6.023306508778913e-05 0.049973930669938375
-        rotation -0.0008004404636122508 0.0014088583283205132 0.9999986872057759 1.570898955933666
+        rotation -0.0008004404636122509 0.0014088583283205132 0.9999986872057759 1.570898955933666
         children [
           DEF WHEEL Shape {
             appearance PBRAppearance {
