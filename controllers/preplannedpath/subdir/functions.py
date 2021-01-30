@@ -27,18 +27,21 @@ def getDistanceandRotation(subpath):
 
         unit_prev_vector = prev_vector / np.linalg.norm(prev_vector)
         unit_new_vector = new_vector / np.linalg.norm(new_vector)
-        angle_prev_vec = np.arctan(unit_prev_vector[2]/unit_prev_vector[0])
-        angle_new_vec = np.arctan(unit_new_vector[2]/unit_new_vector[0])
-        print(angle_prev_vec)
-        print(angle_new_vec)
+        angle_prev_vec = np.arctan(unit_prev_vector[2]/unit_prev_vector[0])/math.pi * 180
+        angle_new_vec = np.arctan(unit_new_vector[2]/unit_new_vector[0])/math.pi * 180
         
-        #ot_product = np.dot(unit_prev_vector, unit_new_vector)
+        dot_product = np.dot(unit_prev_vector, unit_new_vector)
+        if dot_product < 0:
+            if angle_new_vec < 0:
+                angle_new_vec += 180
+            elif angle_new_vec > 0:
+                angle_new_vec -= 180
         #angle = np.arccos(dot_product)
+        # print(angle_prev_vec)
+        # print(angle_new_vec)
         angle = angle_new_vec - angle_prev_vec
-        if math.isnan(angle):
-            angle = 0.0
     
     else:
         print('wrong size')
 
-    return distance, angle/math.pi * 180
+    return distance, angle

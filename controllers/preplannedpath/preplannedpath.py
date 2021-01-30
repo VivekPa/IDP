@@ -28,20 +28,18 @@ gps.enable(TIME_STEP)
 compass = robot.getDevice('compass')
 compass.enable(TIME_STEP)
 
-# path = [[1,0,1], [1,0,1], [0,0,1],[-1,0,1],[-1,0,0],[0,0,0]] # always duplicate first point
-# for i in range(len(path)-2):
-#     subpath = [path[j] for j in range(i,i+3)]
-#     distance, angle = getDistanceandRotation(subpath)
-#     print(distance, angle)
 
-path = [[1,0,1], [1,0,1],[0,0,1],[0,0,0],[-1,0,0],[-1,0,-1],[0,0,-1]] # always duplicate first point
+path = [[1,0,1], [1,0,1],[0,0,1],[0,0,0],[-1,0,0],[-1,0,-1],[0,0,-1],[0,0,0],[-1,0,0],[0,0,1],[1,0,-0.8]] # always duplicate first point
 i = 0
-previous_coordinates = [1,0,1]
+previous_coordinates = path[0]
 
 
 # - perform simulation steps until Webots is stopping the controller
 while robot.step(TIME_STEP) != -1:
 
+    if i == len(path)-2:
+        print('reached the end')
+        break
     # calculating distance between the desired coordinate and current coordinate 
     desired_coordinates = path[i+2]
     current_coordinates = gps.getValues()
@@ -60,9 +58,14 @@ while robot.step(TIME_STEP) != -1:
     north = compass.getValues()
     current_bearing = getBearing(north)
     bearing_error = desired_bearing - current_bearing
-
+    print('bearing error', bearing_error)
     MAX_SPEED = 6.28
     
+    if bearing_error > 180:
+        bearing_error -= 360 
+    elif bearing_error < -180:
+        bearing_error += 360
+
     if bearing_error < 1 and bearing_error > -1:
         if distance < 0.1:
             leftSpeed  = 0
@@ -75,12 +78,12 @@ while robot.step(TIME_STEP) != -1:
             rightSpeed = 0.5 * MAX_SPEED
             leftMotor.setVelocity(leftSpeed)
             rightMotor.setVelocity(rightSpeed)
-    elif bearing_error >= 1:
+    elif bearing_error >= 1: #rotate right
             leftSpeed  = 0.5 * MAX_SPEED
             rightSpeed = -0.5 * MAX_SPEED
             leftMotor.setVelocity(leftSpeed)
             rightMotor.setVelocity(rightSpeed)
-    elif bearing_error <= -1:
+    elif bearing_error <= -1: #rotate left
             leftSpeed  = -0.5 * MAX_SPEED
             rightSpeed = 0.5 * MAX_SPEED
             leftMotor.setVelocity(leftSpeed)
