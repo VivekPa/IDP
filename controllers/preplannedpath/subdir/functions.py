@@ -43,8 +43,8 @@ def getDistanceandRotation(subpath):
             elif angle_new_vec > 0:
                 angle_new_vec -= 180
         #angle = np.arccos(dot_product)
-        print(angle_prev_vec)
-        print(angle_new_vec)
+        #print(angle_prev_vec)
+        #print(angle_new_vec)
         angle = angle_new_vec - angle_prev_vec
     
     else:
@@ -67,13 +67,13 @@ def moveTo(previous_coordinates, current_coordinates, desired_coordinates, curre
     ref_coordinates = [current_coordinates[0]+1, current_coordinates[1] , current_coordinates[2]] # to make previous vector always be [-1,0,0]
     coordinates_list2 = [ref_coordinates,current_coordinates,desired_coordinates]
     x,angle = getDistanceandRotation(coordinates_list2)
-    print('angle',angle)
+    # print('angle',angle)
     desired_bearing = angle + 180 
     
-    print(i,distance, desired_bearing)
-    print('desired bearing', desired_bearing)
+    # print(i,distance, desired_bearing)
+    # print('desired bearing', desired_bearing)
     bearing_error = desired_bearing - current_bearing
-    print('bearing error', bearing_error)
+    # print('bearing error', bearing_error)
 
     # bearing +- 180 to get the smallest bearing error in the correct direction
     if bearing_error > 180:

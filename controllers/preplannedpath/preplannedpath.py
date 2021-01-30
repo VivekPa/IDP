@@ -1,9 +1,10 @@
 """preplannedpath controller."""
 
 # You may need to import some classes of the controller module. Ex:
-from controller import Robot, Motor, DistanceSensor, GPS
+from controller import Robot, Motor, DistanceSensor, GPS, Emitter, Receiver
 from subdir.functions import getBearing, getDistanceandRotation, moveTo
 import math
+import struct #to convert native python data types into a string of bytes and vice versa
 import numpy as np
 
 # create the Robot instance.
@@ -33,7 +34,12 @@ ds_left.enable(TIME_STEP)
 ds_right = robot.getDevice('ds_right')
 ds_right.enable(TIME_STEP)
 
-path = [[1,0,1], [1,0,1],[0,0,1],[0,0,0],[-1,0,0],[-1,0,-1],[0,0,-1],[0,0,0],[-1,0,0],[0,0,1],[1,0,-0.8]] # always duplicate first point
+emitter = robot.getDevice('emitter')
+#emitter.enable(TIME_STEP)
+
+#path = [[1,0,1], [1,0,1],[0,0,1],[0,0,0],[-1,0,0],[-1,0,-1],[0,0,-1],[0,0,0],[-1,0,0],[0,0,1],[1,0,-0.8]] # always duplicate first point
+path = [[1,0,1], [1,0,1],[0,0,1],[1,0,1],[-1,0,0],[0,0,0],[-1,0,-1],[0,0,0]] # always duplicate first point
+
 i = 0
 previous_coordinates = path[0]
 
@@ -61,6 +67,9 @@ while robot.step(TIME_STEP) != -1:
     #example of left obstacle (just an example)
     if current_bearing > 145 and current_bearing < 225: #facing south
         if left_obstacle == True: # set new coordinte to have a reduced z coordinate
+            message = struct.pack("3f", *current_coordinates)
+            emitter.send(message)
+            print('sent', message)
             new_coordinates = [current_coordinates[0], current_coordinates[1], current_coordinates[2]-0.4]
             path.insert(i+2,new_coordinates)
             print('path edited')
