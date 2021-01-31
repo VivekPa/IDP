@@ -11,6 +11,14 @@ def getBearing(north):
         bearing = bearing + 360.0
     return bearing
 
+def get_gps_xz():
+    """
+    Returns the gps coordinates with the y-coordinate removed
+    """
+    coords = gps.getValues()
+    xz_coords = coords.pop(1)
+    return xz_coords
+
 def getDistanceandRotation(subpath):
     """
     Returns the distance between the next point and current point and rotation needed to align with the new direction.
@@ -35,7 +43,7 @@ def getDistanceandRotation(subpath):
                 angle_new_vec = 90
         else:
             angle_new_vec = np.arctan(unit_new_vector[2]/unit_new_vector[0])/math.pi * 180
-        
+
         dot_product = np.dot(unit_prev_vector, unit_new_vector)
         if dot_product < 0:
             if angle_new_vec < 0:
@@ -46,7 +54,7 @@ def getDistanceandRotation(subpath):
         #print(angle_prev_vec)
         #print(angle_new_vec)
         angle = angle_new_vec - angle_prev_vec
-    
+
     else:
         print('wrong size')
 
@@ -63,13 +71,13 @@ def moveTo(previous_coordinates, current_coordinates, desired_coordinates, curre
     coordinates_list = [previous_coordinates,current_coordinates,desired_coordinates]
     distance, x = getDistanceandRotation(coordinates_list)
 
-    # calculating desired bearing to get to desired coordinate from current coordinate 
+    # calculating desired bearing to get to desired coordinate from current coordinate
     ref_coordinates = [current_coordinates[0]+1, current_coordinates[1] , current_coordinates[2]] # to make previous vector always be [-1,0,0]
     coordinates_list2 = [ref_coordinates,current_coordinates,desired_coordinates]
     x,angle = getDistanceandRotation(coordinates_list2)
     # print('angle',angle)
-    desired_bearing = angle + 180 
-    
+    desired_bearing = angle + 180
+
     # print(i,distance, desired_bearing)
     # print('desired bearing', desired_bearing)
     bearing_error = desired_bearing - current_bearing
@@ -77,7 +85,7 @@ def moveTo(previous_coordinates, current_coordinates, desired_coordinates, curre
 
     # bearing +- 180 to get the smallest bearing error in the correct direction
     if bearing_error > 180:
-        bearing_error -= 360 
+        bearing_error -= 360
     elif bearing_error < -180:
         bearing_error += 360
 
@@ -95,5 +103,5 @@ def moveTo(previous_coordinates, current_coordinates, desired_coordinates, curre
     elif bearing_error <= -1: #rotate left to reduce bearing error
             leftSpeed  = -0.5 * MAX_SPEED
             rightSpeed = 0.5 * MAX_SPEED
-    
+
     return leftSpeed, rightSpeed, i
