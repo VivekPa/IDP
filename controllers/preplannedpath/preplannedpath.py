@@ -2,7 +2,7 @@
 
 # You may need to import some classes of the controller module. Ex:
 from controller import Robot, Motor, DistanceSensor, GPS, Emitter, Receiver
-from subdir.functions import getBearing, getDistanceandRotation, moveTo
+from subdir.functions import getBearing, getDistanceandRotation, moveTo, get_gps_xz
 import math
 import struct #to convert native python data types into a string of bytes and vice versa
 import numpy as np
@@ -38,7 +38,7 @@ emitter = robot.getDevice('emitter')
 #emitter.enable(TIME_STEP)
 
 #path = [[1,0,1], [1,0,1],[0,0,1],[0,0,0],[-1,0,0],[-1,0,-1],[0,0,-1],[0,0,0],[-1,0,0],[0,0,1],[1,0,-0.8]] # always duplicate first point
-path = [[1,0,1], [1,0,1],[0,0,1],[1,0,1],[-1,0,0],[0,0,0],[-1,0,-1],[0,0,0]] # always duplicate first point
+path = [[1,1], [1,1],[0,1],[1,1],[-1,0],[0,0],[-1,-1],[0,0]] # always duplicate first point
 
 i = 0
 previous_coordinates = path[0]
@@ -52,7 +52,7 @@ while robot.step(TIME_STEP) != -1:
         break
 
     # get current device values
-    current_coordinates = gps.getValues()
+    current_coordinates = get_gps_xz()
     north = compass.getValues()
     current_bearing = getBearing(north)
     ds_leftvalue = ds_left.getValue()
@@ -61,7 +61,7 @@ while robot.step(TIME_STEP) != -1:
     # detect obstacles
     right_obstacle = ds_rightvalue < 300.0
     left_obstacle = ds_leftvalue < 300.0
-    
+
     #if theres a new point that you want to robot to go to that is not on the original path,
     #insert in the i+2 location in the path
     #example of left obstacle (just an example)
@@ -70,23 +70,23 @@ while robot.step(TIME_STEP) != -1:
             message = struct.pack("3f", *current_coordinates)
             emitter.send(message)
             print('sent', message)
-            new_coordinates = [current_coordinates[0], current_coordinates[1], current_coordinates[2]-0.4]
+            new_coordinates = [current_coordinates[0], current_coordinates[1]-0.4]
             path.insert(i+2,new_coordinates)
             print('path edited')
 
-    # calculating distance between the desired coordinate and current coordinate 
+    # calculating distance between the desired coordinate and current coordinate
     desired_coordinates = path[i+2]
-    
+
     MAX_SPEED = 6.28
-    
+
     leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i)
     leftMotor.setVelocity(leftSpeed)
     rightMotor.setVelocity(rightSpeed)
     previous_coordinates = current_coordinates
 
-    
 
-    
+
+
 
 
 
