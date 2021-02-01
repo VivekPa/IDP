@@ -11,11 +11,12 @@ def getBearing(north):
         bearing = bearing + 360.0
     return bearing
 
-def get_gps_xz():
+def get_gps_xz(gps):
     """
-    Returns the gps coordinates with the y-coordinate removed
+    Returns the gps coordinates with the y-coordinate removed, based off the
+    3d gps coordinates.
     """
-    coords = gps.getValues()
+    coords = gps
     xz_coords = coords.pop(1)
     return xz_coords
 
