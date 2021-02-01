@@ -29,60 +29,19 @@ gps.enable(TIME_STEP)
 compass = robot.getDevice('compass')
 compass.enable(TIME_STEP)
 
-ds_1 = robot.getDevice('ds_left')
-ds_1.enable(TIME_STEP)
-ds_2 = robot.getDevice('ds_right')
-ds_2.enable(TIME_STEP)
+ds_left = robot.getDevice('ds_left')
+ds_left.enable(TIME_STEP)
+ds_right = robot.getDevice('ds_right')
+ds_right.enable(TIME_STEP)
 
 emitter = robot.getDevice('emitter')
 #emitter.enable(TIME_STEP)
 
-#path = [[1,0,1], [1,0,1],[0,0,1],[0,0,0],[-1,0,0],[-1,0,-1],[0,0,-1],[0,0,0],[-1,0,0],[0,0,1],[1,0,-0.8]] # always duplicate first point
-path = [[1,1], [1,1],[0,1],[1,1],[-1,0],[0,0],[-1,-1],[0,0]] # always duplicate first point
+path = [[1,0,1], [1,0,1],[0,0,1],[0,0,0],[-1,0,0],[-1,0,-1],[0,0,-1],[0,0,0],[-1,0,0],[0,0,1],[1,0,-0.8]] # always duplicate first point
+#path = [[1,1], [1,1],[0,1],[1,1],[-1,0],[0,0],[-1,-1],[0,0]] # always duplicate first point
 
 i = 0
 previous_coordinates = path[0]
-
-
-# - perform simulation steps until Webots is stopping the controller
-while robot.step(TIME_STEP) != -1:
-
-    if i == len(path)-2:
-        print('reached the end')
-        break
-
-    # get current device values
-    current_coordinates = get_gps_xz(gps.getValues())
-    north = compass.getValues()
-    current_bearing = getBearing(north)
-    ds_1_value = ds_1.getValue()
-    ds_2_value = ds_2.getValue()
-
-    # detect obstacles
-    right_obstacle = ds_1_value < 300.0
-    left_obstacle = ds_2_value < 300.0
-
-    #if theres a new point that you want to robot to go to that is not on the original path,
-    #insert in the i+2 location in the path
-    #example of left obstacle (just an example)
-    if current_bearing > 145 and current_bearing < 225: #facing south
-        if left_obstacle == True: # set new coordinte to have a reduced z coordinate
-            message = struct.pack("3f", *current_coordinates)
-            emitter.send(message)
-            print('sent', message)
-            new_coordinates = [current_coordinates[0], current_coordinates[1]-0.4]
-            path.insert(i+2,new_coordinates)
-            print('path edited')
-
-    # calculating distance between the desired coordinate and current coordinate
-    desired_coordinates = path[i+2]
-
-    MAX_SPEED = 6.28
-
-    leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i)
-    leftMotor.setVelocity(leftSpeed)
-    rightMotor.setVelocity(rightSpeed)
-    previous_coordinates = current_coordinates
 
 """
 This section of the code details the functions for detecting an object by 'sweeping'
@@ -91,54 +50,94 @@ values from the sensors directly.
 """
 
 #declare detector angles and distances and angles from gps
-ds_1_distance = 0.12
-ds_1_angle = 60
-ds_1_disp_angle = -30
-ds_2_distance = 0.12
-ds_2_angle = -60
-ds_2_disp_angle = 30
+def get_attributes(ds):
+    """
+    A function which returns the distance sensor location and orientation values
+    given the name of a distance sensor. Workaround for functions not taking
+    objects as arguments.
+
+    Arguments: ds (a string which denotes the desired distance sensor)
+    """
+    if ds == 'ds_1':
+        ds_distance = 0.12
+        ds_angle = 60
+        ds_disp_angle = -30
+    elif ds == 'ds_2':
+        ds_distance = 0.12
+        ds_angle = -60
+        ds_disp_angle = 30
+    else:
+        print("distance sensor not found")
+    return [ds_distance, ds_angle, ds_disp_angle]
+
 
 #declare wall ordinates
 wall_list_x = [-1.2, 1.2]
 wall_list_z = [-1.2, 1.2]
 
-#detect an object
+def ds_read(ds):
+    """"
+    A function which returns the correct distance sensor reading given the name
+    of a distance sensor. Workaround for functions not taking objects as
+    arguments.
 
-def obstacle_check(i):
+    Arguments: ds (a string which denotes the desired distance sensor)
+    """
+    if ds == 'ds_1':
+        ds_value = ds_left.getValue()
+    elif ds == 'ds_2':
+        ds_value = ds_right.getValue()
+    else:
+        print('distance sensor not found')
+    return ds_value
+
+def obstacle_check(ds):
     """
     A function called if the distance sensors detect an object within the sweep lane. It determines whether the object
     is a block or a wall, calling the reciprocating_sweep function if it is a block.
 
-    Arguments: i (the distance sensor that called the function)
+    Arguments: ds (a string which denotes the distance sensor which detected an obstacle)
     """
     #make a rough estimate of coordinates of the point on a surface it 'sees'
+    #retrieve attributes
+    ds_attributes = get_attributes(ds)
+    ds_distance = ds_attributes[0]
     #find absolute angle of detector
-    ds_[i]_absolute_angle = getBearing(compass.getValues()) + ds_[i]_angle
-    ds_[i]_absolute_disp_angle = getBearing(compass.getValues()) + ds_[i]_disp_angle
+    ds_absolute_angle = getBearing(compass.getValues()) + ds_attributes[1]
+    ds_absolute_disp_angle = getBearing(compass.getValues()) + ds_attributes[2]
     #find coordinates
-    x_prelim = ds_[i].getValue() * np.sin(ds_[i]_absolute_angle) + ds_[i]_distance * np.sin(ds_[i]_absolute_disp_angle) + get_gps_xz(gps.getValues())[0]
-    z_prelim = ds_[i].getValue() * np.cos(ds_[i]_absolute_angle) + ds_[i]_distance * np.cos(ds_[i]_absolute_disp_angle) + get_gps_xz(gps.getValues())[1]
+    x_prelim = ds_read(ds) * np.sin(ds_absolute_angle) + ds_distance * np.sin(ds_absolute_disp_angle) + get_gps_xz(gps.getValues())[0]
+    z_prelim = ds_read(ds) * np.cos(ds_absolute_angle) + ds_distance * np.cos(ds_absolute_disp_angle) + get_gps_xz(gps.getValues())[1]
     prelim_coords = [x_prelim, z_prelim]
     #check if the object is a wall
+    wall_check = [0,0,0,0]
     for n in wall_list_x:
         if (wall_list_x[n] - 0.01) <= prelim_coords[0] <= (wall_list_x[n] + 0.01):
             pass
         else:
-            stop()
-            reciprocating_sweep(i)
+            wall_check[n] = 1
     for n in wall_list_z:
         if (wall_list_x[n] - 0.01) <= prelim_coords[1] <= (wall_list_x[n] + 0.01):
             pass
         else:
-            stop()
-            reciprocating_sweep(i)
+            wall_check[n + 2] = 1
+    if wall_check == [1,1,1,1]:
+        stop()
+        reciprocating_sweep(i)
+    else:
+        pass
 
-def reciprocating_sweep(i):
+def reciprocating_sweep(ds):
     """
     A function which the robot uses to find the edge of a detected block. It returns the coordinates of the block.
 
-    Arguments: i (the distance sensor which detected an obstacle)
+    Arguments: ds (a string which denotes the distance sensor which detected an obstacle)
     """
+    #Retrieve attributes
+    ds_attributes = get_attributes(ds)
+    ds_distance = ds_attributes[0]
+    ds_absolute_angle = getBearing(compass.getValues()) + ds_attributes[1]
+    ds_absolute_disp_angle = getBearing(compass.getValues()) + ds_attributes[2]
     #move back 80mm
     #find coordinates 80mm behind
     back_coords = [(get_gps_xz(gps.getValues())[0] - 0.08 * np.sin(getBearing(compass.getValues()))), (get_gps_xz(gps.getValues())[1] - 0.08 * np.cos(getBearing(compass.getValues())))]
@@ -146,10 +145,10 @@ def reciprocating_sweep(i):
     #move forwards 80mm, 5mm at a time
     for d in range(0, 0.08, 0.005):
         #find coordinates of point on line sensor
-        x_coord = ds_[i].getValue() * np.sin(ds_[i]_absolute_angle) + ds_[i]_distance * np.sin(ds_[i]_absolute_disp_angle) + get_gps_xz(gps.getValues())[0]
-        z_coord = ds_[i].getValue() * np.cos(ds_[i]_absolute_angle) + ds_[i]_distance * np.cos(ds_[i]_absolute_disp_angle) + get_gps_xz(gps.getValues())[1]
+        x_coord = ds_read(ds) * np.sin(ds_absolute_angle) + ds_distance * np.sin(ds_absolute_disp_angle) + get_gps_xz(gps.getValues())[0]
+        z_coord = ds_read(ds) * np.cos(ds_absolute_angle) + ds_distance * np.cos(ds_absolute_disp_angle) + get_gps_xz(gps.getValues())[1]
         measured_coords = [x_coord, z_coord]
-        measured_distance = ds_[i].getValue()
+        measured_distance = ds_read(ds)
         #do not check the first time as nothing to compare
         if d > 0:
             #check if a jump occurs in the sensor readings, which indicates the edge
@@ -181,6 +180,56 @@ def stop():
     leftMotor.setVelocity(0.0)
     rightMotor.setVelocity(0.0)
 
+"""
+End of search functions
+"""
 
+# - perform simulation steps until Webots is stopping the controller
+while robot.step(TIME_STEP) != -1:
+
+    if i == len(path)-2:
+        print('reached the end')
+        break
+
+    # get current device values
+    current_coordinates = gps.getValues()
+    north = compass.getValues()
+    current_bearing = getBearing(north)
+    ds_1_value = ds_left.getValue()
+    ds_2_value = ds_right.getValue()
+
+    # detect obstacles
+    right_obstacle = ds_1_value < 300.0
+    left_obstacle = ds_2_value < 300.0
+
+    #call obstacle_check if necessary
+    if right_obstacle == True:
+        obstacle_check('ds_1')
+    elif left_obstacle == True:
+        obstacle_check('ds_2')
+    else:
+        pass
+
+    #if theres a new point that you want to robot to go to that is not on the original path,
+    #insert in the i+2 location in the path
+    #example of left obstacle (just an example)
+    if current_bearing > 145 and current_bearing < 225: #facing south
+        if left_obstacle == True: # set new coordinte to have a reduced z coordinate
+            message = struct.pack("3f", *current_coordinates)
+            emitter.send(message)
+            print('sent', message)
+            new_coordinates = [current_coordinates[0], current_coordinates[2]-0.4]
+            path.insert(i+2,new_coordinates)
+            print('path edited')
+
+    # calculating distance between the desired coordinate and current coordinate
+    desired_coordinates = path[i+2]
+
+    MAX_SPEED = 6.28
+
+    leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i)
+    leftMotor.setVelocity(leftSpeed)
+    rightMotor.setVelocity(rightSpeed)
+    previous_coordinates = current_coordinates
 
 # Enter here exit cleanup code.
