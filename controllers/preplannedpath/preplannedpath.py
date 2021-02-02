@@ -37,7 +37,8 @@ ds_right.enable(TIME_STEP)
 emitter = robot.getDevice('emitter')
 #emitter.enable(TIME_STEP)
 
-path = [[1,0,1], [1,0,1],[0,0,1],[0,0,0],[-1,0,0],[-1,0,-1],[0,0,-1],[0,0,0],[-1,0,0],[0,0,1],[1,0,-0.8]] # always duplicate first point
+#path = [[1,0,1], [1,0,1],[0,0,1],[0,0,0],[-1,0,0],[-1,0,-1],[0,0,-1],[0,0,0],[-1,0,0],[0,0,1],[1,0,-0.8]] # always duplicate first point
+path = [[1,0,1], [1,0,1],[0,0,1],[-1,0,1],[-1,0,0.6],[0,0,0.6],[0,0,0],[-1,0,0],[-1,0,-0.6],[0,0,-0.6]] # always duplicate first point
 #path = [[1,1], [1,1],[0,1],[1,1],[-1,0],[0,0],[-1,-1],[0,0]] # always duplicate first point
 
 i = 0
