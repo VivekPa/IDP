@@ -209,14 +209,14 @@ while robot.step(TIME_STEP) != -1:
     #if theres a new point that you want to robot to go to that is not on the original path,
     #insert in the i+2 location in the path
     #example of left obstacle (just an example)
-    if current_bearing > 145 and current_bearing < 225: #facing south
-        if left_obstacle == True: # set new coordinte to have a reduced z coordinate
-            message = struct.pack("3f", *current_coordinates)
-            emitter.send(message)
-            print('sent', message)
-            new_coordinates = [current_coordinates[0], current_coordinates[2]-0.4]
-            path.insert(i+2,new_coordinates)
-            print('path edited')
+    # if current_bearing > 145 and current_bearing < 225: #facing south
+    #     if left_obstacle == True: # set new coordinte to have a reduced z coordinate
+    #         message = struct.pack("3f", *current_coordinates)
+    #         emitter.send(message)
+    #         print('sent', message)
+    #         new_coordinates = [current_coordinates[0], current_coordinates[2]-0.4]
+    #         path.insert(i+2,new_coordinates)
+    #         print('path edited')
 
     # calculating distance between the desired coordinate and current coordinate
     desired_coordinates = path[i+2]
