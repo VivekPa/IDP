@@ -6,8 +6,8 @@ Integrated Design Project
 | ------------- | ------------- |
 | GPS  | `gps`  |
 | Compass  | `compass`  |
-| Left Distance Sensor  | `ds_1`  |
-| Right Distance Sensor  | `ds_2`  |
+| Left Distance Sensor  | `ds_left`  |
+| Right Distance Sensor  | `ds_right`  |
 | Colour sensor  | `camera`  |
 | Emitter  | `emitter`  |
 | Reciever  | `receiver`  |
