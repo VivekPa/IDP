@@ -37,8 +37,8 @@ ds_right.enable(TIME_STEP)
 emitter = robot.getDevice('emitter')
 #emitter.enable(TIME_STEP)
 
-#path = [[1,0,1], [1,0,1],[0,0,1],[0,0,0],[-1,0,0],[-1,0,-1],[0,0,-1],[0,0,0],[-1,0,0],[0,0,1],[1,0,-0.8]] # always duplicate first point
-path = [[1,0,1], [1,0,1],[0,0,1],[-1,0,1],[-1,0,0.6],[0,0,0.6],[0,0,0],[-1,0,0],[-1,0,-0.6],[0,0,-0.6]] # always duplicate first point
+path = [[1,0,1], [1,0,1],[0,0,1],[0,0,0],[-1,0,0],[-1,0,-1],[0,0,-1],[0,0,0],[-1,0,0],[0,0,1],[1,0,-0.8]] # always duplicate first point
+#path = [[1,0,1], [1,0,1],[0,0,1],[-1,0,1],[-1,0,0.6],[0,0,0.6],[0,0,0],[-1,0,0],[-1,0,-0.6],[0,0,-0.6]] # always duplicate first point
 #path = [[1,1], [1,1],[0,1],[1,1],[-1,0],[0,0],[-1,-1],[0,0]] # always duplicate first point
 
 i = 0
@@ -148,7 +148,7 @@ def reciprocating_sweep(ds):
     #move back 80mm
     #find coordinates 80mm behind
     back_coords = [(gps.getValues()[0] - 0.08 * np.sin(getBearing(compass.getValues()))), (gps.getValues()[2] - 0.08 * np.cos(getBearing(compass.getValues())))]
-    moveto(get_gps_xz(gps.getValues()), get_gps_xz(gps.getValues()), back_coords(), getBearing(), i)
+    moveTo(get_gps_xz(gps.getValues()), get_gps_xz(gps.getValues()), back_coords(), getBearing(), i)
     #move forwards 80mm, 5mm at a time
     for d in range(0, 0.08, 0.005):
         #find coordinates of point on line sensor
@@ -220,14 +220,14 @@ while robot.step(TIME_STEP) != -1:
     #if theres a new point that you want to robot to go to that is not on the original path,
     #insert in the i+2 location in the path
     #example of left obstacle (just an example)
-    if current_bearing > 145 and current_bearing < 225: #facing south
-        if left_obstacle == True: # set new coordinte to have a reduced z coordinate
-            message = struct.pack("3f", *current_coordinates)
-            emitter.send(message)
-            print('sent', message)
-            new_coordinates = [current_coordinates[0], current_coordinates[2]-0.4]
-            path.insert(i+2,new_coordinates)
-            print('path edited')
+    # if current_bearing > 145 and current_bearing < 225: #facing south
+    #     if left_obstacle == True: # set new coordinte to have a reduced z coordinate
+    #         message = struct.pack("3f", *current_coordinates)
+    #         emitter.send(message)
+    #         print('sent', message)
+    #         new_coordinates = [current_coordinates[0], current_coordinates[2]-0.4]
+    #         path.insert(i+2,new_coordinates)
+    #         print('path edited')
 
     # calculating distance between the desired coordinate and current coordinate
     desired_coordinates = path[i+2]
