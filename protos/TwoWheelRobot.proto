@@ -1,22 +1,23 @@
 PROTO TwoWheelRobot [
-  field SFVec3f    translation  0 0 0
-  field SFRotation rotation     0 1 0 0
-  field SFColor colour 1 0 0 
+
+	field SFVec3f    translation  0 0 0
+	field SFRotation rotation     0 1 0 0
 ]
 {
 Robot {
-  translation IS translation
-  rotation IS rotation
+	translation IS translation
+	rotation IS rotation
   children [
     Camera {
-      translation 0 0 0.1
-      width 1
-      height 1
+      translation 0 0.025 0.1
     }
     Solid {
       translation 0 -0.03 0
       children [
         Shape {
+          appearance PBRAppearance {
+            baseColor 0 0 0
+          }
           geometry DEF CASTOR_BALL Sphere {
             radius 0.01
           }
@@ -30,8 +31,7 @@ Robot {
     }
     DEF BODY Shape {
       appearance PBRAppearance {
-        baseColor IS colour
-        roughness 1
+        baseColor 0 0.5 1
         metalness 0
       }
       geometry Box {
@@ -49,12 +49,12 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation 0.06000000000005251 1.4531748733392746e-07 0.04999909020156158
-        rotation 0.0019079727809748464 -0.0019079797047584805 -0.9999963596200304 4.712381666377444
+        translation 0.06 0 0.05
+        rotation 0 0 1 1.5707963071795863
         children [
           DEF WHEEL Shape {
             appearance PBRAppearance {
-              baseColor 0.305882 0.898039 0.25098
+              baseColor 0.305882 0.898039 0.250981
               roughness 1
               metalness 0
             }
@@ -81,8 +81,8 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation -0.05999999999986491 2.9408924358078494e-07 0.049999115915629125
-        rotation 0.0017048106017812177 -0.001704816680961621 -0.9999970936062246 4.712382400408873
+        translation -0.06 0 0.05
+        rotation 0 0 -1 1.5707963271795862
         children [
           USE WHEEL
         ]
@@ -93,13 +93,12 @@ Robot {
       }
     }
     DEF DS_RIGHT DistanceSensor {
-      translation -0.03 0 0.1
-      rotation 0 1 0 -1.87079
+      translation -0.03 0.025 0.1
+      rotation 0 1 0 -1.5708
       children [
         Shape {
           appearance PBRAppearance {
-            baseColor 0.184314 0.596078 0.847059
-            roughness 1
+            baseColor 1 0 1
             metalness 0
           }
           geometry Box {
@@ -110,12 +109,12 @@ Robot {
       name "ds_right"
     }
     DEF DS_LEFT DistanceSensor {
-      translation 0.03 0 0.1
-      rotation 0 1 0 -1.27079
+      translation 0.03 0.025 0.1
+      rotation 0 1 0 -1.5709
       children [
         Shape {
           appearance PBRAppearance {
-            baseColor 0.184314 0.596078 0.847059
+            baseColor 1 0 1
             roughness 1
             metalness 0
           }
@@ -126,12 +125,56 @@ Robot {
       ]
       name "ds_left"
     }
+    Solid {
+      translation 0.0475 -0.02 0.125
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 0 0.5 1
+            metalness 0
+          }
+          geometry DEF ARM Box {
+            size 0.005 0.03 0.05
+          }
+        }
+      ]
+      name "solid(3)"
+      boundingObject USE ARM
+      physics Physics {
+      }
+    }
+    Solid {
+      translation -0.0475 -0.02 0.125
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 0 0.5 1
+            metalness 0
+          }
+          geometry USE ARM
+        }
+      ]
+      name "solid(4)"
+      boundingObject USE ARM
+      physics Physics {
+      }
+    }
+    Compass {
+      translation 0 0.025 0.1
+    }
+    GPS {
+      translation 0 0.025 0.1
+    }
+    Emitter {
+      translation 0 0.025 0.1
+    }
+    Receiver {
+      translation 0 0.025 0.1
+    }
   ]
+  name "robot(1)"
   boundingObject USE BODY
   physics Physics {
-    density -1
-    mass 1
   }
-  controller "four_wheel_colision_avoidance"
 }
 }
