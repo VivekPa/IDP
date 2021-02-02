@@ -59,13 +59,13 @@ def get_attributes(ds):
     Arguments: ds (a string which denotes the desired distance sensor)
     """
     if ds == 'ds_1':
-        ds_distance = 0.12
+        ds_distance = 0.11
         ds_angle = 60
-        ds_disp_angle = -30
+        ds_disp_angle = -39.8
     elif ds == 'ds_2':
-        ds_distance = 0.12
+        ds_distance = 0.11
         ds_angle = -60
-        ds_disp_angle = 30
+        ds_disp_angle = 39.8
     else:
         print("distance sensor not found")
     return [ds_distance, ds_angle, ds_disp_angle]
@@ -84,17 +84,17 @@ def ds_read(ds):
     Arguments: ds (a string which denotes the desired distance sensor)
     """
     if ds == 'ds_1':
-        ds_value = ds_left.getValue()
+        ds_value = 0.0003 * ds_left.getValue()
     elif ds == 'ds_2':
-        ds_value = ds_right.getValue()
+        ds_value = 0.0003 * ds_right.getValue()
     else:
         print('distance sensor not found')
     return ds_value
 
-def obstacle_check(ds):
+def obstacle_coords(ds):
     """
-    A function called if the distance sensors detect an object within the sweep lane. It determines whether the object
-    is a block or a wall, calling the reciprocating_sweep function if it is a block.
+    A function which returns the coordinates on the obstacle surface which
+    the distance sensor is detecting.
 
     Arguments: ds (a string which denotes the distance sensor which detected an obstacle)
     """
@@ -106,17 +106,27 @@ def obstacle_check(ds):
     ds_absolute_angle = getBearing(compass.getValues()) + ds_attributes[1]
     ds_absolute_disp_angle = getBearing(compass.getValues()) + ds_attributes[2]
     #find coordinates
-    x_prelim = ds_read(ds) * np.sin(ds_absolute_angle) + ds_distance * np.sin(ds_absolute_disp_angle) + gps.getValues()[0]
-    z_prelim = ds_read(ds) * np.cos(ds_absolute_angle) + ds_distance * np.cos(ds_absolute_disp_angle) + gps.getValues()[2]
+    x_coord = ds_read(ds) * np.sin(ds_absolute_angle) - ds_distance * np.sin(ds_absolute_disp_angle) + gps.getValues()[0]
+    z_coord = ds_read(ds) * np.cos(ds_absolute_angle) - ds_distance * np.cos(ds_absolute_disp_angle) + gps.getValues()[2]
+    return x_coord, z_coord
+
+def obstacle_check(ds):
+    """
+    A function called if the distance sensors detect an object within the sweep lane. It determines whether the object
+    is a block or a wall, calling the reciprocating_sweep function if it is a block.
+
+    Arguments: ds (a string which denotes the distance sensor which detected an obstacle)
+    """
+    x_prelim, z_prelim = obstacle_coords(ds)
     prelim_coords = [x_prelim, z_prelim]
     print(prelim_coords)
     #check if the object is a wall, by comparing with the lines x = 1.2/-1.2,
     #z = 1.2/-1.2
-    WALL_COOR = 1.2
-    WALL_TOLERANCE = 0.01
-    lower_wall = WALL_COOR - WALL_TOLERANCE
-    upper_wall = WALL_COOR + WALL_TOLERANCE
-    if 1.19 <= abs(x_prelim) <= 1.21 or 1.19 <= abs(z_prelim) <= 1.21:
+    wall_coord = 1.2
+    wall_tolerance = 0.01
+    lower_wall = wall_coord - wall_tolerance
+    upper_wall = wall_coord + wall_tolerance
+    if lower_wall <= abs(x_prelim) <= upper_wall or lower_wall <= abs(z_prelim) <= upper_wall:
         pass
     else:
         print('thats no moon!')
@@ -195,8 +205,8 @@ while robot.step(TIME_STEP) != -1:
     ds_2_value = ds_right.getValue()
 
     # detect obstacles
-    right_obstacle = ds_1_value < 300.0
-    left_obstacle = ds_2_value < 300.0
+    right_obstacle = ds_1_value < 1000.0
+    left_obstacle = ds_2_value < 1000.0
 
     #call obstacle_check if necessary
     if right_obstacle == True:
@@ -209,14 +219,14 @@ while robot.step(TIME_STEP) != -1:
     #if theres a new point that you want to robot to go to that is not on the original path,
     #insert in the i+2 location in the path
     #example of left obstacle (just an example)
-    # if current_bearing > 145 and current_bearing < 225: #facing south
-    #     if left_obstacle == True: # set new coordinte to have a reduced z coordinate
-    #         message = struct.pack("3f", *current_coordinates)
-    #         emitter.send(message)
-    #         print('sent', message)
-    #         new_coordinates = [current_coordinates[0], current_coordinates[2]-0.4]
-    #         path.insert(i+2,new_coordinates)
-    #         print('path edited')
+    if current_bearing > 145 and current_bearing < 225: #facing south
+        if left_obstacle == True: # set new coordinte to have a reduced z coordinate
+            message = struct.pack("3f", *current_coordinates)
+            emitter.send(message)
+            print('sent', message)
+            new_coordinates = [current_coordinates[0], current_coordinates[2]-0.4]
+            path.insert(i+2,new_coordinates)
+            print('path edited')
 
     # calculating distance between the desired coordinate and current coordinate
     desired_coordinates = path[i+2]

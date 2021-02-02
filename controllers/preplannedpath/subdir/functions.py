@@ -17,7 +17,7 @@ def get_gps_xz(gps):
     3d gps coordinates.
     """
     coords = gps
-    xz_coords = coords.pop(1)
+    xz_coords = [gps[0], gps[2]]
     return xz_coords
 
 def getDistanceandRotation(subpath):
@@ -38,9 +38,9 @@ def getDistanceandRotation(subpath):
         unit_new_vector = new_vector / np.linalg.norm(new_vector)
         angle_prev_vec = np.arctan(unit_prev_vector[2]/unit_prev_vector[0])/math.pi * 180
         if unit_new_vector[0] == 0: # to avoid divide by zero problems
-            if unit_new_vector[1] > 0:
+            if unit_new_vector[2] > 0:
                 angle_new_vec = -90
-            if unit_new_vector[1] < 0:
+            if unit_new_vector[2] < 0:
                 angle_new_vec = 90
         else:
             angle_new_vec = np.arctan(unit_new_vector[2]/unit_new_vector[0])/math.pi * 180
@@ -90,7 +90,7 @@ def moveTo(previous_coordinates, current_coordinates, desired_coordinates, curre
     elif bearing_error < -180:
         bearing_error += 360
 
-    if bearing_error < 0.5 and bearing_error > -0.5:
+    if bearing_error < 1 and bearing_error > -1:
         if distance < 0.1: #stop once desired coordinate is nearby
             leftSpeed  = 0
             rightSpeed = 0
@@ -98,10 +98,10 @@ def moveTo(previous_coordinates, current_coordinates, desired_coordinates, curre
         else: #if no bearing error and not near desired coordinate, just go straight
             leftSpeed  = 0.5 * MAX_SPEED
             rightSpeed = 0.5 * MAX_SPEED
-    elif bearing_error >= 0.5: #rotate right to reduce bearing error
+    elif bearing_error >= 1: #rotate right to reduce bearing error
             leftSpeed  = 0.5 * MAX_SPEED
             rightSpeed = -0.5 * MAX_SPEED
-    elif bearing_error <= -0.5: #rotate left to reduce bearing error
+    elif bearing_error <= -1: #rotate left to reduce bearing error
             leftSpeed  = -0.5 * MAX_SPEED
             rightSpeed = 0.5 * MAX_SPEED
 
