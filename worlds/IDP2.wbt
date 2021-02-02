@@ -18,8 +18,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.19548668533328017 -0.9502057427108541 -0.24268086528756477 2.0766287557098853
-  position -3.2507043619646745 2.180901441306448 -1.614459844621247
+  orientation -0.19072527180911006 -0.955982593661177 -0.22298240134636202 2.030776785041759
+  position -3.355250803701406 1.9757529958003806 -1.727665647188548
 }
 TexturedBackground {
 }
@@ -39,7 +39,7 @@ DEF Block_R1 Solid {
         metalness 0
       }
       geometry Box {
-        size 0.1 0.1 0.1
+        size 0.05 0.05 0.05
       }
     }
   ]
@@ -325,7 +325,7 @@ Robot {
           }
         }
         DistanceSensor {
-          translation -0.006 0.015 0.08
+          translation -0.001 -0.015 0.08
           rotation 0 1 0 -2.61799
           children [
             DEF DS Shape {
@@ -345,7 +345,7 @@ Robot {
           ]
         }
         DistanceSensor {
-          translation -0.144 0.015 0.08
+          translation -0.149 -0.015 0.08
           rotation 0 1 0 -0.5236
           children [
             USE DS
@@ -379,7 +379,7 @@ Robot {
       ]
     }
   ]
-  name "robotv2"
+  name "robotv2(2)"
   boundingObject USE BODY
   physics Physics {
   }
@@ -512,7 +512,7 @@ Robot {
           }
         }
         DistanceSensor {
-          translation -0.006 0.015 0.08
+          translation -0.001 -0.015 0.08
           rotation 0 1 0 -2.61799
           children [
             DEF DS Shape {
@@ -532,7 +532,7 @@ Robot {
           ]
         }
         DistanceSensor {
-          translation -0.144 0.015 0.08
+          translation -0.149 -0.015 0.08
           rotation 0 1 0 -0.5236
           children [
             USE DS
