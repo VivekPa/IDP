@@ -76,7 +76,7 @@ wall_list_x = [-1.2, 1.2]
 wall_list_z = [-1.2, 1.2]
 
 def ds_read(ds):
-    """"
+    """
     A function which returns the correct distance sensor reading given the name
     of a distance sensor. Workaround for functions not taking objects as
     arguments.
@@ -106,26 +106,22 @@ def obstacle_check(ds):
     ds_absolute_angle = getBearing(compass.getValues()) + ds_attributes[1]
     ds_absolute_disp_angle = getBearing(compass.getValues()) + ds_attributes[2]
     #find coordinates
-    x_prelim = ds_read(ds) * np.sin(ds_absolute_angle) + ds_distance * np.sin(ds_absolute_disp_angle) + get_gps_xz(gps.getValues())[0]
-    z_prelim = ds_read(ds) * np.cos(ds_absolute_angle) + ds_distance * np.cos(ds_absolute_disp_angle) + get_gps_xz(gps.getValues())[1]
+    x_prelim = ds_read(ds) * np.sin(ds_absolute_angle) + ds_distance * np.sin(ds_absolute_disp_angle) + gps.getValues()[0]
+    z_prelim = ds_read(ds) * np.cos(ds_absolute_angle) + ds_distance * np.cos(ds_absolute_disp_angle) + gps.getValues()[2]
     prelim_coords = [x_prelim, z_prelim]
-    #check if the object is a wall
-    wall_check = [0,0,0,0]
-    for n in wall_list_x:
-        if (wall_list_x[n] - 0.01) <= prelim_coords[0] <= (wall_list_x[n] + 0.01):
-            pass
-        else:
-            wall_check[n] = 1
-    for n in wall_list_z:
-        if (wall_list_x[n] - 0.01) <= prelim_coords[1] <= (wall_list_x[n] + 0.01):
-            pass
-        else:
-            wall_check[n + 2] = 1
-    if wall_check == [1,1,1,1]:
-        stop()
-        reciprocating_sweep(i)
-    else:
+    print(prelim_coords)
+    #check if the object is a wall, by comparing with the lines x = 1.2/-1.2,
+    #z = 1.2/-1.2
+    WALL_COOR = 1.2
+    WALL_TOLERANCE = 0.01
+    lower_wall = WALL_COOR - WALL_TOLERANCE
+    upper_wall = WALL_COOR + WALL_TOLERANCE
+    if 1.19 <= abs(x_prelim) <= 1.21 or 1.19 <= abs(z_prelim) <= 1.21:
         pass
+    else:
+        print('thats no moon!')
+        stop()
+        reciprocating_sweep(ds)
 
 def reciprocating_sweep(ds):
     """
@@ -140,7 +136,7 @@ def reciprocating_sweep(ds):
     ds_absolute_disp_angle = getBearing(compass.getValues()) + ds_attributes[2]
     #move back 80mm
     #find coordinates 80mm behind
-    back_coords = [(get_gps_xz(gps.getValues())[0] - 0.08 * np.sin(getBearing(compass.getValues()))), (get_gps_xz(gps.getValues())[1] - 0.08 * np.cos(getBearing(compass.getValues())))]
+    back_coords = [(gps.getValues()[0] - 0.08 * np.sin(getBearing(compass.getValues()))), (gps.getValues()[2] - 0.08 * np.cos(getBearing(compass.getValues())))]
     moveto(get_gps_xz(gps.getValues()), get_gps_xz(gps.getValues()), back_coords(), getBearing(), i)
     #move forwards 80mm, 5mm at a time
     for d in range(0, 0.08, 0.005):
