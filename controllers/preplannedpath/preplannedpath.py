@@ -86,9 +86,9 @@ def ds_read(ds):
     Arguments: ds (a string which denotes the desired distance sensor)
     """
     if ds == 'ds_1':
-        ds_value = 0.0003 * ds_left.getValue()
+        ds_value = 0.0003 * ds_left.getValue() + 0.011
     elif ds == 'ds_2':
-        ds_value = 0.0003 * ds_right.getValue()
+        ds_value = 0.0003 * ds_right.getValue() + 0.011
     else:
         print('distance sensor not found')
     print(ds_value)
@@ -135,7 +135,7 @@ def obstacle_check(ds):
     #check if the object is a wall, by comparing with the lines x = 1.2/-1.2,
     #z = 1.2/-1.2
     wall_coord = 1.2
-    wall_tolerance = 0.025
+    wall_tolerance = 0.01
     lower_wall = wall_coord - wall_tolerance
     upper_wall = wall_coord + wall_tolerance
     if lower_wall <= abs(x_prelim) <= upper_wall or lower_wall <= abs(z_prelim) <= upper_wall:
