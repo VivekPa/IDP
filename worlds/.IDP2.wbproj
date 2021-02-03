@@ -4,11 +4,13 @@ simulationViewPerspectives: 000000ff0000000100000002000001180000021a010000000201
 sceneTreePerspectives: 000000ff0000000100000002000000c0000000fc0100000002010000000200
 maximizedDockId: -1
 centralWidgetVisible: 1
-orthographicViewHeight: 1
+projectionMode: PERSPECTIVE
+orthographicViewHeight: 4.4065
 textFiles: 0 "protos/TwoWheelRobotV2.proto"
-globalOptionalRendering: DistanceSensorRays
+globalOptionalRendering: DistanceSensorRays::CoordinateSystem
 consoles: Console:All:All
 renderingDevicePerspectives: robot(1):camera;1;1;0;0
 renderingDevicePerspectives: robot(2):camera;1;1;0;0
 renderingDevicePerspectives: robotv2(1):camera;1;1;0;0
+renderingDevicePerspectives: robotv2(2):camera;1;1;0;0
 renderingDevicePerspectives: robotv2:camera;1;1;0;0

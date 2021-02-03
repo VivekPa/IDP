@@ -9,6 +9,7 @@ def getBearing(north):
     bearing = (rad - 1.5708)/math.pi * 180
     if bearing < 0.0:
         bearing = bearing + 360.0
+    print(bearing)
     return bearing
 
 def get_gps_xz(gps):

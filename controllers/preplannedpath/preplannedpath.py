@@ -57,15 +57,17 @@ def get_attributes(ds):
     objects as arguments.
 
     Arguments: ds (a string which denotes the desired distance sensor)
+
+    Note: Angles given are taken from the z-axis of the robot.
     """
     if ds == 'ds_1':
-        ds_distance = 0.109
+        ds_distance = 0.1089770618
         ds_angle = 60
-        ds_disp_angle = -42.8
+        ds_disp_angle = -42.76882539
     elif ds == 'ds_2':
-        ds_distance = 0.109
+        ds_distance = 0.1089770618
         ds_angle = -60
-        ds_disp_angle = 42.8
+        ds_disp_angle = 42.76882539
     else:
         print("distance sensor not found")
     return [ds_distance, ds_angle, ds_disp_angle]
@@ -89,6 +91,7 @@ def ds_read(ds):
         ds_value = 0.0003 * ds_right.getValue()
     else:
         print('distance sensor not found')
+    print(ds_value)
     return ds_value
 
 def obstacle_coords(ds):
@@ -98,16 +101,25 @@ def obstacle_coords(ds):
 
     Arguments: ds (a string which denotes the distance sensor which detected an obstacle)
     """
-    #make a rough estimate of coordinates of the point on a surface it 'sees'
+    #make a rough estimate of coordinates of the point on a surface it 'sees
+    #retrieve reading
+    ds_reading = ds_read(ds)
+    print(ds_reading)
     #retrieve attributes
     ds_attributes = get_attributes(ds)
     ds_distance = ds_attributes[0]
+    print(ds_distance)
+    #retrieve gps
+    gps_reading = gps.getValues()
     #find absolute angle of detector
-    ds_absolute_angle = - getBearing(compass.getValues()) + ds_attributes[1]
-    ds_absolute_disp_angle = - getBearing(compass.getValues()) + ds_attributes[2]
+    ds_absolute_angle = (getBearing(compass.getValues()) + ds_attributes[1]) * (3.14159265358929323846264/180)
+    ds_absolute_disp_angle = (getBearing(compass.getValues()) + ds_attributes[2]) * (3.14159265358929323846264/180)
+    print(ds_absolute_angle, ds_absolute_disp_angle)
     #find coordinates
-    x_coord = ds_read(ds) * np.sin(ds_absolute_angle) + ds_distance * np.sin(ds_absolute_disp_angle) + gps.getValues()[0]
-    z_coord = ds_read(ds) * np.cos(ds_absolute_angle) + ds_distance * np.cos(ds_absolute_disp_angle) + gps.getValues()[2]
+    x_coord = (ds_reading * np.cos(ds_absolute_angle)) + (ds_distance * np.cos(ds_absolute_disp_angle)) + gps_reading[0]
+    print('x constituents are', (ds_reading * np.cos(ds_absolute_angle)), (ds_reading * np.cos(ds_absolute_disp_angle)))
+    z_coord = (ds_reading * np.sin(ds_absolute_angle)) + (ds_distance * np.sin(ds_absolute_disp_angle)) + gps_reading[2]
+    print('z constituents are', (ds_reading * np.sin(ds_absolute_angle)), (ds_reading * np.sin(ds_absolute_disp_angle)))
     return x_coord, z_coord
 
 def obstacle_check(ds):
@@ -123,7 +135,7 @@ def obstacle_check(ds):
     #check if the object is a wall, by comparing with the lines x = 1.2/-1.2,
     #z = 1.2/-1.2
     wall_coord = 1.2
-    wall_tolerance = 0.01
+    wall_tolerance = 0.025
     lower_wall = wall_coord - wall_tolerance
     upper_wall = wall_coord + wall_tolerance
     if lower_wall <= abs(x_prelim) <= upper_wall or lower_wall <= abs(z_prelim) <= upper_wall:
@@ -183,13 +195,13 @@ def reciprocating_sweep(ds):
 
 def go_to_block(block_coords):
     """
-    This function will move the robot to a position 5cm behind a block when
+    This function give the desired coords to a position 5cm behind a block when
     found in order to determine its colour. Empty for now.
 
     Arguments: block_coords (an array of the block coordinates found in
     obstacle_check)
     """
-    stop()
+
 
 def stop():
     """
@@ -223,7 +235,9 @@ while robot.step(TIME_STEP) != -1:
     #call obstacle_check if necessary
     if right_obstacle == True:
         obstacle_check('ds_1')
-    elif left_obstacle == True:
+    else:
+        pass
+    if left_obstacle == True:
         obstacle_check('ds_2')
     else:
         pass
@@ -231,6 +245,7 @@ while robot.step(TIME_STEP) != -1:
     #if theres a new point that you want to robot to go to that is not on the original path,
     #insert in the i+2 location in the path
     #example of left obstacle (just an example)
+    """
     if current_bearing > 145 and current_bearing < 225: #facing south
         if left_obstacle == True: # set new coordinte to have a reduced z coordinate
             message = struct.pack("3f", *current_coordinates)
@@ -239,7 +254,7 @@ while robot.step(TIME_STEP) != -1:
             new_coordinates = [current_coordinates[0], current_coordinates[2]-0.4]
             path.insert(i+2,new_coordinates)
             print('path edited')
-
+    """
     # calculating distance between the desired coordinate and current coordinate
     desired_coordinates = path[i+2]
 
