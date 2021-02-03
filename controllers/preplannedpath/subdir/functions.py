@@ -21,6 +21,13 @@ def get_gps_xz(gps):
     xz_coords = [gps[0], gps[2]]
     return xz_coords
 
+def bearing_round(bearing, base = 90):
+    """
+    Returns the bearing rounded to the nearest 90 degrees.
+    """
+    rounded_bearing =  base * round(bearing / base)
+    return rounded_bearing
+
 def getDistanceandRotation(subpath):
     """
     Returns the distance between the next point and current point and rotation needed to align with the new direction.
