@@ -1,8 +1,8 @@
 """preplannedpath controller."""
 
 # You may need to import some classes of the controller module. Ex:
-from controller import Robot, Motor, DistanceSensor, GPS, Emitter, Receiver
-from subdir.functions import getBearing, getDistanceandRotation, moveTo, get_gps_xz
+from controller import Robot, Motor, DistanceSensor, GPS, Emitter, Receiver, Camera
+from subdir.functions import getBearing, getDistanceandRotation, moveTo, get_gps_xz, bearing_round
 import math
 import struct #to convert native python data types into a string of bytes and vice versa
 import numpy as np
@@ -35,12 +35,16 @@ ds_right = robot.getDevice('ds_right')
 ds_right.enable(TIME_STEP)
 
 emitter = robot.getDevice('emitter')
-#emitter.enable(TIME_STEP)
 
-path = [[1,0,1], [1,0,1],[0,0,1],[0,0,0],[-1,0,0],[-1,0,-1],[0,0,-1],[0,0,0],[-1,0,0],[0,0,1],[1,0,-0.8]] # always duplicate first point
+camera = robot.getDevice('camera')
+camera.enable(TIME_STEP)
+
+
+path = [[1,0,1],[1,0,1],[0,0,1],[-1,0,1],[-1,0,0.6],[0,0,0.6],[1,0,0.6],[1,0,0.2],[0,0,0.2],[-1,0,0.2]] # always duplicate first point
 #path = [[1,1], [1,1],[0,1],[1,1],[-1,0],[0,0],[-1,-1],[0,0]] # always duplicate first point
 
 i = 0
+obstacle = False
 previous_coordinates = path[0]
 
 """
@@ -91,47 +95,78 @@ def ds_read(ds):
         ds_value = 0.0003 * ds_right.getValue() + 0.011
     else:
         print('distance sensor not found')
-    print(ds_value)
+    # print(ds_value)
     return ds_value
 
-def obstacle_coords(ds):
+def find_obstacle_coords(ds):
     """
-    A function which returns the coordinates on the obstacle surface which
-    the distance sensor is detecting.
+    A function which returns the coordinates of the incident point on the
+    surface which the distance sensor is detecting.
 
-    Arguments: ds (a string which denotes the distance sensor which detected an obstacle)
+    Arguments: ds (a string which denotes the distance sensor which detected an
+    obstacle)
     """
     #make a rough estimate of coordinates of the point on a surface it 'sees
     #retrieve reading
     ds_reading = ds_read(ds)
-    print(ds_reading)
+    #print(ds_reading)
     #retrieve attributes
     ds_attributes = get_attributes(ds)
     ds_distance = ds_attributes[0]
-    print(ds_distance)
-    #retrieve gps
+    # print(ds_distance)
+    #retrieve gps and bearing
     gps_reading = gps.getValues()
-    #find absolute angle of detector
-    ds_absolute_angle = (getBearing(compass.getValues()) + ds_attributes[1]) * (3.14159265358929323846264/180)
-    ds_absolute_disp_angle = (getBearing(compass.getValues()) + ds_attributes[2]) * (3.14159265358929323846264/180)
-    print(ds_absolute_angle, ds_absolute_disp_angle)
-    #find coordinates
+    bearing = getBearing(compass.getValues())
+    #find absolute angle of detector. remember to convert to radians!
+    ds_absolute_angle = (bearing + ds_attributes[1]) * (3.14159265358929323846264/180)
+    ds_absolute_disp_angle = (bearing + ds_attributes[2]) * (3.14159265358929323846264/180)
+    #print(ds_absolute_angle, ds_absolute_disp_angle)
+    #find coordinates.
     x_coord = (ds_reading * np.cos(ds_absolute_angle)) + (ds_distance * np.cos(ds_absolute_disp_angle)) + gps_reading[0]
-    print('x constituents are', (ds_reading * np.cos(ds_absolute_angle)), (ds_reading * np.cos(ds_absolute_disp_angle)))
     z_coord = (ds_reading * np.sin(ds_absolute_angle)) + (ds_distance * np.sin(ds_absolute_disp_angle)) + gps_reading[2]
-    print('z constituents are', (ds_reading * np.sin(ds_absolute_angle)), (ds_reading * np.sin(ds_absolute_disp_angle)))
     return x_coord, z_coord
 
-def obstacle_check(ds):
+def find_block_coords(prelim_coords, bearing, ds):
+    """
+    A function which returns the coordinates of the centre of a block.
+
+    Arguments: prelim_coords (the incident point's coordinates), bearing(the
+    robot's bearing in degrees), ds (the distance sensor which detected an
+    obstacle)
+    """
+    #find out the cartesian direction of the robot.
+    cartesian_bearing = bearing_round(bearing)
+    #use diagonal distance from corner to centre of block
+    block_diagonal = 0.03535533906
+    #the corner detected will depend on the cartesian direction of the robot and
+    #the distance sensor which detected the block (as they point in opposing
+    #directions)
+    if ds == 'ds_1':
+        #find angle of corner to centre. remember to convert to radians!
+        diagonal_absolute_angle = (bearing_round(bearing) - 45) * (3.14159265358979323846264/180)
+        x_block = prelim_coords[0] + block_diagonal * np.cos(diagonal_absolute_angle)
+        z_block = prelim_coords[1] + block_diagonal * np.sin(diagonal_absolute_angle)
+    elif ds == 'ds_2':
+        diagonal_absolute_angle = (bearing_round(bearing) + 45) * (3.14159265358979323846264/180)
+        x_block = prelim_coords[0] + block_diagonal * np.cos(diagonal_absolute_angle)
+        z_block = prelim_coords[1] + block_diagonal * np.sin(diagonal_absolute_angle)
+    else:
+        print('distance sensor not found')
+    block_coords = [x_block, 0, z_block]
+    print('block_coords:', block_coords)
+    return block_coords
+
+def obstacle_check(ds,obstacle):
     """
     A function called if the distance sensors detect an object within the sweep lane. It determines whether the object
     is a block or a wall, calling the reciprocating_sweep function if it is a block.
 
     Arguments: ds (a string which denotes the distance sensor which detected an obstacle)
+    Returns: block_coords, obstacle (Boolean)
     """
-    x_prelim, z_prelim = obstacle_coords(ds)
+    x_prelim, z_prelim = find_obstacle_coords(ds)
     prelim_coords = [x_prelim, z_prelim]
-    print(prelim_coords, gps.getValues())
+    # print(prelim_coords, gps.getValues())
     #check if the object is a wall, by comparing with the lines x = 1.2/-1.2,
     #z = 1.2/-1.2
     wall_coord = 1.2
@@ -140,11 +175,15 @@ def obstacle_check(ds):
     upper_wall = wall_coord + wall_tolerance
     if lower_wall <= abs(x_prelim) <= upper_wall or lower_wall <= abs(z_prelim) <= upper_wall:
         print('all okay!')
+        obstacle = False
+        block_coords = None
         pass
     else:
         print('thats no moon!')
-        stop()
-        go_to_block(prelim_coords)
+        obstacle = True
+        block_coords = find_block_coords(prelim_coords, getBearing(compass.getValues()), ds)
+    
+    return block_coords, obstacle
 """
 def reciprocating_sweep(ds):
 """
@@ -216,7 +255,8 @@ End of search functions
 
 # - perform simulation steps until Webots is stopping the controller
 while robot.step(TIME_STEP) != -1:
-
+    #print(camera.getImage())
+    obstacle = False
     if i == len(path)-2:
         print('reached the end')
         break
@@ -234,11 +274,11 @@ while robot.step(TIME_STEP) != -1:
 
     #call obstacle_check if necessary
     if right_obstacle == True:
-        obstacle_check('ds_1')
+        block_coords, obstacle = obstacle_check('ds_1', obstacle)
     else:
         pass
     if left_obstacle == True:
-        obstacle_check('ds_2')
+        block_coords, obstacle = obstacle_check('ds_2', obstacle)
     else:
         pass
 
@@ -261,6 +301,16 @@ while robot.step(TIME_STEP) != -1:
     MAX_SPEED = 6.28
 
     leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i)
+    if obstacle == True:
+        leftSpeed  = 0
+        rightSpeed = 0
+        print('trying to break')
+        leftMotor.setVelocity(leftSpeed)
+        rightMotor.setVelocity(rightSpeed)
+        break
+        
+    else:
+        pass
     leftMotor.setVelocity(leftSpeed)
     rightMotor.setVelocity(rightSpeed)
     previous_coordinates = current_coordinates
