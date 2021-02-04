@@ -9,7 +9,7 @@ def getBearing(north):
     bearing = (rad - 1.5708)/math.pi * 180
     if bearing < 0.0:
         bearing = bearing + 360.0
-    print(bearing)
+    #print(bearing)
     return bearing
 
 def get_gps_xz(gps):
@@ -98,18 +98,18 @@ def moveTo(previous_coordinates, current_coordinates, desired_coordinates, curre
     elif bearing_error < -180:
         bearing_error += 360
 
-    if bearing_error < 1 and bearing_error > -1:
-        if distance < 0.1: #stop once desired coordinate is nearby
+    if bearing_error < 0.5 and bearing_error > -0.5:
+        if distance < 0.08: #stop once desired coordinate is nearby
             leftSpeed  = 0
             rightSpeed = 0
             i += 1
         else: #if no bearing error and not near desired coordinate, just go straight
             leftSpeed  = 0.5 * MAX_SPEED
             rightSpeed = 0.5 * MAX_SPEED
-    elif bearing_error >= 1: #rotate right to reduce bearing error
+    elif bearing_error >= 0.5: #rotate right to reduce bearing error
             leftSpeed  = 0.5 * MAX_SPEED
             rightSpeed = -0.5 * MAX_SPEED
-    elif bearing_error <= -1: #rotate left to reduce bearing error
+    elif bearing_error <= -0.5: #rotate left to reduce bearing error
             leftSpeed  = -0.5 * MAX_SPEED
             rightSpeed = 0.5 * MAX_SPEED
 
