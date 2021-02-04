@@ -18,8 +18,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.3488625606057151 -0.8766034497432407 -0.3314533235704143 1.8290783215926043
-  position -3.6299301685293006 3.5252438148771423 -0.2052481971387013
+  orientation -0.3055847729674698 -0.9028724625912349 -0.3023892571254129 1.8563132995551614
+  position -3.9002098722917893 3.149858110646549 -0.5017674649413789
 }
 TexturedBackground {
 }
@@ -31,7 +31,7 @@ Floor {
   }
 }
 DEF Block_R1 Solid {
-  translation 1.02631 0.05 -0.544894
+  translation 1.01525 0.05 -0.511103
   children [
     DEF BOX_R Shape {
       appearance PBRAppearance {
@@ -109,7 +109,7 @@ DEF Block_B2 Solid {
   }
 }
 DEF Block_B3 Solid {
-  translation 1.03298 0.05 -0.413338
+  translation 0.151975 0.05 0.82651
   children [
     USE BOX_B
   ]
