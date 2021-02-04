@@ -2,7 +2,7 @@
 
 # You may need to import some classes of the controller module. Ex:
 from controller import Robot, Motor, DistanceSensor, GPS, Emitter, Receiver, Camera
-from subdir.functions import getBearing, getDistanceandRotation, moveTo, get_gps_xz, bearing_round
+from subdir.functions import getBearing, getDistanceandRotation, moveTo, get_gps_xz, bearing_round, rotateTo
 import math
 import struct #to convert native python data types into a string of bytes and vice versa
 import numpy as np
@@ -39,13 +39,15 @@ emitter = robot.getDevice('emitter')
 camera = robot.getDevice('camera')
 camera.enable(TIME_STEP)
 
-
-path = [[1,0,1],[1,0,1],[0,0,1],[-1,0,1],[-1,0,0.6],[0,0,0.6],[1,0,0.6],[1,0,0.2],[0,0,0.2],[-1,0,0.2]] # always duplicate first point
+home = [1,0,1]
+path = [home,home,[0,0,1],[-1,0,1],[-1,0,0.6],[0,0,0.6],[1,0,0.6],[1,0,0.2],[0,0,0.2],[-1,0,0.2]] # always duplicate first point
 #path = [[1,1], [1,1],[0,1],[1,1],[-1,0],[0,0],[-1,-1],[0,0]] # always duplicate first point
 
 i = 0
 obstacle = False
 previous_coordinates = path[0]
+robot_colour = 2 # 0 - red, 1 - green, 2- blue
+other_robot_colour = 0
 
 """
 This section of the code details the functions for detecting an object by 'sweeping'
@@ -174,7 +176,7 @@ def obstacle_check(ds,obstacle):
     lower_wall = wall_coord - wall_tolerance
     upper_wall = wall_coord + wall_tolerance
     if lower_wall <= abs(x_prelim) <= upper_wall or lower_wall <= abs(z_prelim) <= upper_wall:
-        print('all okay!')
+        print('all okay! Just a wall')
         obstacle = False
         block_coords = None
         pass
@@ -253,10 +255,25 @@ def stop():
 End of search functions
 """
 
+def getRGB():
+    """
+    Returns: integer cooresponding to colour with largest pixel value as well individual pixel values
+        0: red
+        1: green
+        2: blue
+    """
+    image = camera.getImageArray()
+    RGB = image[0][0]
+    colour = RGB.index(max(RGB)) 
+    red   = RGB[0]
+    green = RGB[1]
+    blue  = RGB[2]
+
+    return colour, red, green, blue
+
+
 # - perform simulation steps until Webots is stopping the controller
 while robot.step(TIME_STEP) != -1:
-    #print(camera.getImage())
-    obstacle = False
     if i == len(path)-2:
         print('reached the end')
         break
@@ -272,13 +289,17 @@ while robot.step(TIME_STEP) != -1:
     right_obstacle = ds_1_value < 1000.0
     left_obstacle = ds_2_value < 1000.0
 
-    #call obstacle_check if necessary
-    if right_obstacle == True:
-        block_coords, obstacle = obstacle_check('ds_1', obstacle)
-    else:
-        pass
-    if left_obstacle == True:
-        block_coords, obstacle = obstacle_check('ds_2', obstacle)
+    #call obstacle_check only if obstacle outside of while loop is false
+    #potentially changes obstacle to True if it detects a block
+    if obstacle == False:
+        if right_obstacle == True:
+            block_coords, obstacle = obstacle_check('ds_1', obstacle)
+        else:
+            pass
+        if left_obstacle == True:
+            block_coords, obstacle = obstacle_check('ds_2', obstacle)
+        else:
+            pass
     else:
         pass
 
@@ -299,18 +320,34 @@ while robot.step(TIME_STEP) != -1:
     desired_coordinates = path[i+2]
 
     MAX_SPEED = 6.28
-
-    leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i)
+    
+    #obstacle Boolean here might be different from the obstacle boolean at the start of this loop due to the previous if statement
     if obstacle == True:
-        leftSpeed  = 0
-        rightSpeed = 0
-        print('trying to break')
-        leftMotor.setVelocity(leftSpeed)
-        rightMotor.setVelocity(rightSpeed)
-        break
-        
+        alignment = False
+        leftSpeed, rightSpeed, alignment = rotateTo(previous_coordinates, current_coordinates, block_coords, current_bearing, alignment)
+        if alignment == True:
+            colour, red, green, blue = getRGB()
+            alignment = False #switch alignment back to false
+            print(colour, red, green, blue)
+            if colour == robot_colour: #implement collection function
+                print('yeboi collect it')
+                leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)
+                if j == i+1: #collected block
+                    obstacle = False
+                    path.insert(i+2,home)
+            elif colour == other_robot_colour: #implement avoidance function
+                print('nah screw you')
+            # leftSpeed  = 0
+            # rightSpeed = 0
+            
+            #obstacle = False #change obstacle back to False after collecting the block
+            #print(obstacle)
+            # leftMotor.setVelocity(leftSpeed)
+            # rightMotor.setVelocity(rightSpeed)
+            # print('trying to break')
+            # break
     else:
-        pass
+        leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i)
     leftMotor.setVelocity(leftSpeed)
     rightMotor.setVelocity(rightSpeed)
     previous_coordinates = current_coordinates
