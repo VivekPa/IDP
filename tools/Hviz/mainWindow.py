@@ -9,7 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from qwt import QwtPlot
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -22,9 +22,9 @@ class Ui_MainWindow(object):
         self.horizontalFrame.setObjectName("horizontalFrame")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.horizontalFrame)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.Map = QwtPlot(self.horizontalFrame)
-        self.Map.setObjectName("Map")
-        self.horizontalLayout.addWidget(self.Map)
+        self.graphicsView = PlotWidget(self.horizontalFrame)
+        self.graphicsView.setObjectName("graphicsView")
+        self.horizontalLayout.addWidget(self.graphicsView)
         spacerItem = QtWidgets.QSpacerItem(10, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.verticalLayout = QtWidgets.QVBoxLayout()
@@ -153,3 +153,4 @@ class Ui_MainWindow(object):
         self.actioncharcoal.setText(_translate("MainWindow", "charcoal"))
         self.actionSmall.setText(_translate("MainWindow", "Small"))
         self.actionMedium.setText(_translate("MainWindow", "Medium"))
+from pyqtgraph import PlotWidget
