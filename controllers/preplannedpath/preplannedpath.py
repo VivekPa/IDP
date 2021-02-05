@@ -333,12 +333,13 @@ while robot.step(TIME_STEP) != -1:
     right_obstacle = ds_1_value < 1000.0
     left_obstacle = ds_2_value < 1000.0
 
-    # Check if the robot is in the unloading region
+    # Check if the robot is near home
     if np.linalg.norm(np.array(current_coordinates) - np.array(home)) < 0.1:
         atHome = True
     else:
         atHome = False
-
+        
+    # Check if the robot is in the Unloading region
     if np.linalg.norm(np.array(current_coordinates) - np.array(home)) < 0.2:
         atUnload = True
     else:
