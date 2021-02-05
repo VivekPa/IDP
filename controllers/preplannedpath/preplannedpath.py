@@ -298,12 +298,12 @@ while robot.step(TIME_STEP) != -1:
                 leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)
                 if j == i+1: #collected block
                     obstacle = False
-                    path.insert(i+2, last_known_point)
+                    path.insert(i+2, np.array(last_known_point))
                     if path_turns == 0:
-                        path.insert(i+3, home)
+                        path.insert(i+3, np.array(home))
                     else:
-                        path.insert(i+3, [last_known_point[0], 0, 1])
-                        path.insert(i+4, home)
+                        path.insert(i+3, np.array([last_known_point[0], 0, 1]))
+                        path.insert(i+4, np.array(home))
             elif colour == other_robot_colour: #implement avoidance function
                 print('nah screw you')
                 #append to the list of other colour blocks

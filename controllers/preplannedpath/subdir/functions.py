@@ -90,6 +90,7 @@ def moveTo(previous_coordinates, current_coordinates, desired_coordinates, curre
     # print(i,distance, desired_bearing)
     # print('desired bearing', desired_bearing)
     bearing_error = desired_bearing - current_bearing
+    print(bearing_error)
     # print('bearing error', bearing_error)
 
     # bearing +- 180 to get the smallest bearing error in the correct direction
@@ -134,6 +135,7 @@ def rotateTo(previous_coordinates, current_coordinates, desired_coordinates, cur
     # print(i,distance, desired_bearing)
     #print('desired bearing', desired_bearing)
     bearing_error = desired_bearing - current_bearing
+    print(bearing_error)
     #print('bearing error', bearing_error)
 
     # bearing +- 180 to get the smallest bearing error in the correct direction
