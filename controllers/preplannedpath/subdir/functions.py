@@ -90,7 +90,6 @@ def moveTo(previous_coordinates, current_coordinates, desired_coordinates, curre
     # print(i,distance, desired_bearing)
     # print('desired bearing', desired_bearing)
     bearing_error = desired_bearing - current_bearing
-    print(bearing_error)
     # print('bearing error', bearing_error)
 
     # bearing +- 180 to get the smallest bearing error in the correct direction
@@ -126,7 +125,7 @@ def rotateTo(previous_coordinates, current_coordinates, desired_coordinates, cur
     MAX_SPEED = 6.28
 
     # calculating desired bearing to get to desired coordinate from current coordinate
-    ref_coordinates = [current_coordinates[0]+1, current_coordinates[1] , current_coordinates[2]] # to make previous vector always be [-1,0,0]
+    ref_coordinates = np.array([current_coordinates[0]+1, current_coordinates[1] , current_coordinates[2]]) # to make previous vector always be [-1,0,0]
     coordinates_list2 = [ref_coordinates,current_coordinates,desired_coordinates]
     x,angle = getDistanceandRotation(coordinates_list2)
     # print('angle',angle)
@@ -135,7 +134,6 @@ def rotateTo(previous_coordinates, current_coordinates, desired_coordinates, cur
     # print(i,distance, desired_bearing)
     #print('desired bearing', desired_bearing)
     bearing_error = desired_bearing - current_bearing
-    print(bearing_error)
     #print('bearing error', bearing_error)
 
     # bearing +- 180 to get the smallest bearing error in the correct direction

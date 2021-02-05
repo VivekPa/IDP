@@ -49,12 +49,14 @@ previous_coordinates = path[0]
 robot_colour = 2 # 0 - red, 1 - green, 2- blue
 other_robot_colour = 0
 
+#initialise 'active block coordinates'
+block_coords = []
 #initialise block list
 other_colour_blocks = []
 
 #declare turn variable to decide on path home
 path_turns = 0
-turnpoints = [[-1, 0, 0.6], [1, 0, 0.2]]
+turnpoints = [np.array([-1, 0, 0.6]), np.array([1, 0, 0.2])]
 
 """
 This section of the code details the functions for detecting an object by 'sweeping'
@@ -238,7 +240,7 @@ while robot.step(TIME_STEP) != -1:
         break
 
     # get current device values
-    current_coordinates = gps.getValues()
+    current_coordinates = np.array(gps.getValues())
     north = compass.getValues()
     current_bearing = getBearing(north)
     ds_1_value = ds_left.getValue()
@@ -248,7 +250,6 @@ while robot.step(TIME_STEP) != -1:
     right_obstacle = ds_1_value < 1000.0
     left_obstacle = ds_2_value < 1000.0
 
-    block_coords = []
     #call obstacle_check only if obstacle outside of while loop is false
     #potentially changes obstacle to True if it detects a block
     if obstacle == False:
@@ -278,11 +279,20 @@ while robot.step(TIME_STEP) != -1:
     """
     # calculating distance between the desired coordinate and current coordinate
     desired_coordinates = path[i+2]
+
     #check if robot has made a turn
-    if desired_coordinates in turnpoints:
-        path_turns += 1
-        turnpoints.pop(0)
-        print("turned")
+    coordinates = path[i+2]
+    for turnpoint in turnpoints:
+        for i in range(0,2,1):
+            if coordinates[i] == turnpoint[i]:
+                turn = True
+            else:
+                turn = False
+                break
+        if turn == True:
+            path_turns += 1
+            turnpoints.pop(0)
+            print("turned")
 
     MAX_SPEED = 6.28
     #obstacle Boolean here might be different from the obstacle boolean at the start of this loop due to the previous if statement
@@ -298,11 +308,11 @@ while robot.step(TIME_STEP) != -1:
                 leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)
                 if j == i+1: #collected block
                     obstacle = False
-                    path.insert(i+2, np.array(last_known_point))
+                    path.insert(i+2, last_known_point)
                     if path_turns == 0:
-                        path.insert(i+3, np.array(home))
+                        pass #path.insert(i+3, home)
                     else:
-                        path.insert(i+3, np.array([last_known_point[0], 0, 1]))
+                        path.insert(i+3, [last_known_point[0], 0, 1])
                         path.insert(i+4, np.array(home))
             elif colour == other_robot_colour: #implement avoidance function
                 print('nah screw you')
