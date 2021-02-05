@@ -2,7 +2,7 @@
 
 # You may need to import some classes of the controller module. Ex:
 from controller import Robot, Motor, DistanceSensor, GPS, Emitter, Receiver, Camera
-from subdir.functions import getBearing, getDistanceandRotation, moveTo, get_gps_xz, bearing_round, rotateTo
+from subdir.functions import *
 import math
 import struct #to convert native python data types into a string of bytes and vice versa
 import numpy as np
@@ -15,6 +15,8 @@ TIME_STEP = int(robot.getBasicTimeStep())
 
 # You should insert a getDevice-like function in order to get the
 # instance of a device of the robot. Something like:
+
+""" Initialise sensors """
 
 leftMotor = robot.getDevice('wheel1')
 rightMotor = robot.getDevice('wheel2')
@@ -42,20 +44,23 @@ camera_left.enable(TIME_STEP)
 camera_right = robot.getDevice('camera_right')
 camera_right.enable(TIME_STEP)
 
+""" Define Waypoints and Home """
 home = [1,0,1]
 path = [home,home,[0,0,1],[-1,0,1],[-1,0,0.6],[0,0,0.6],[1,0,0.6],[1,0,0.2],[0,0,0.2],[-1,0,0.2]] # always duplicate first point
 #path = [[1,1], [1,1],[0,1],[1,1],[-1,0],[0,0],[-1,-1],[0,0]] # always duplicate first point
-atHome      = True
-atUnload    = True
-unloading   = False
+atHome      = True               # Home region
+atUnload    = True               # Unloading region
 
-i = 0
-obstacle = False
+""" State Variables """
+unloading   = False              # Unloading state
+obstacle = False                 # Obstacle detection state
+
+i = 0                            # Path index
 previous_coordinates = path[0]
-robot_colour = 2 # 0 - red, 1 - green, 2- blue
+robot_colour = 2                 # 0 - red, 1 - green, 2- blue
 other_robot_colour = 0
 
-deg2rad = 3.14159265358929323846264/180
+deg2rad = 3.14159/180
 
 """
 This section of the code details the functions for detecting an object by 'sweeping'
@@ -269,32 +274,15 @@ def return_to_home():
     """
     path.insert(i+2,home)
 
-# def unload():
-#     """
-#     This function allows the collected block to be unloaded by:
-#         * Moving the robot back by __ distance
-#         * rotate to next waypoint
-#     """
-#     # unload_distance     = 0.3
-#     # unload_direction    = np.array([-np.sin(current_bearing*deg2rad), 0, -np.cos(current_bearing*deg2rad)])
-#     # unload_coords       = current_coordinates + unload_direction * unload_distance
-    
-#     # path.insert(i+2, unload_coords)
-#     # print(unload_coords)
-
-#     leftSpeed  = -0.5 * MAX_SPEED
-#     rightSpeed = -0.5 * MAX_SPEED
-
 def unload():
-    if atHome and robot.getTime() > 8:
-        unloading = True
+    """
+    This function allows the collected block to be unloaded by:
+        * Moving the robot back by __ distance
+        * rotate to next waypoint
+    """
+    leftSpeed  = -0.5 * MAX_SPEED
+    rightSpeed = -0.5 * MAX_SPEED
 
-    if unloading:
-        leftSpeed  = -0.5 * MAX_SPEED
-        rightSpeed = -0.5 * MAX_SPEED
-    
-    if atUnload == False:
-        unloading = False
     return leftSpeed, rightSpeed
 
 def getRGB():
@@ -338,9 +326,9 @@ while robot.step(TIME_STEP) != -1:
         atHome = True
     else:
         atHome = False
-        
+
     # Check if the robot is in the Unloading region
-    if np.linalg.norm(np.array(current_coordinates) - np.array(home)) < 0.2:
+    if np.linalg.norm(np.array(current_coordinates) - np.array(home)) < 0.3:
         atUnload = True
     else:
         atUnload = False
@@ -348,11 +336,11 @@ while robot.step(TIME_STEP) != -1:
     #call obstacle_check only if obstacle outside of while loop is false
     #potentially changes obstacle to True if it detects a block
     if obstacle == False:
-        if right_obstacle == True and atUnload == False:
+        if right_obstacle == True:
             block_coords, obstacle = obstacle_check('ds_1', obstacle)
         else:
             pass
-        if left_obstacle == True and atUnload == False:
+        if left_obstacle == True:
             block_coords, obstacle = obstacle_check('ds_2', obstacle)
         else:
             pass
@@ -375,10 +363,13 @@ while robot.step(TIME_STEP) != -1:
     # calculating distance between the desired coordinate and current coordinate
     desired_coordinates = path[i+2]
 
-    MAX_SPEED = 6.28
-    
+    # MAX_SPEED = 6.28
+    MAX_SPEED = 10
+
+    """ Obstacle Detection and Alignment """
     #obstacle Boolean here might be different from the obstacle boolean at the start of this loop due to the previous if statement
-    if obstacle == True:
+    if obstacle == True and unloading == False:
+        print("Obstacle Detection and Alignment")
         alignment = False
         leftSpeed, rightSpeed, alignment = rotateTo(previous_coordinates, current_coordinates, block_coords, current_bearing, alignment)
         if alignment == True:
@@ -405,15 +396,15 @@ while robot.step(TIME_STEP) != -1:
     else:
         leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i)
 
-    if atHome and robot.getTime() > 8:
-        unloading = True
+    """ Unloading """
+    if atHome and robot.getTime() > 8:  # If the robot is near home after 'return_to_home()'
+        unloading = True                # Initiate unloading procedure
 
     if unloading:
-        leftSpeed  = -0.5 * MAX_SPEED
-        rightSpeed = -0.5 * MAX_SPEED
+        leftSpeed, rightSpeed  = unload()   
     
-    if atUnload == False:
-        unloading = False  
+    if atUnload == False:               # Once the robot moves backwards past the unloading region,
+        unloading = False               # Stop the unloading procedure
 
     leftMotor.setVelocity(leftSpeed)
     rightMotor.setVelocity(rightSpeed)
