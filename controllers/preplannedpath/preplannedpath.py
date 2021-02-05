@@ -36,8 +36,11 @@ ds_right.enable(TIME_STEP)
 
 emitter = robot.getDevice('emitter')
 
-camera = robot.getDevice('camera')
-camera.enable(TIME_STEP)
+camera_left = robot.getDevice('camera_left')
+camera_left.enable(TIME_STEP)
+
+camera_right = robot.getDevice('camera_right')
+camera_right.enable(TIME_STEP)
 
 home = [1,0,1]
 path = [home,home,[0,0,1],[-1,0,1],[-1,0,0.6],[0,0,0.6],[1,0,0.6],[1,0,0.2],[0,0,0.2],[-1,0,0.2]] # always duplicate first point
@@ -262,7 +265,7 @@ def getRGB():
         1: green
         2: blue
     """
-    image = camera.getImageArray()
+    image = camera_left.getImageArray()
     RGB = image[0][0]
     colour = RGB.index(max(RGB)) 
     red   = RGB[0]
