@@ -265,14 +265,29 @@ def getRGB():
         1: green
         2: blue
     """
-    image = camera_left.getImageArray()
-    RGB = image[0][0]
-    colour = RGB.index(max(RGB)) 
-    red   = RGB[0]
-    green = RGB[1]
-    blue  = RGB[2]
+    image_left = camera_left.getImageArray()
+    image_right = camera_right.getImageArray()
+    RGB_left = image_left[0][0]
+    RGB_right = image_right[0][0]
+    colour_left = RGB_left.index(max(RGB_left))
+    colour_right = RGB_right.index(max(RGB_right))
+    if colour_left == colour_right:
+        colour = colour_left
+    elif colour_left != 1 and colour_right != 1:
+        print('error! one red one blue')
+        colour = None
+    else:
+        if colour_left == 1:
+            colour = colour_right
+        else:
+            colour = colour_left
 
-    return colour, red, green, blue
+
+    # red   = RGB[0]
+    # green = RGB[1]
+    # blue  = RGB[2]
+
+    return colour  #, red, green, blue
 
 
 # - perform simulation steps until Webots is stopping the controller
@@ -329,9 +344,9 @@ while robot.step(TIME_STEP) != -1:
         alignment = False
         leftSpeed, rightSpeed, alignment = rotateTo(previous_coordinates, current_coordinates, block_coords, current_bearing, alignment)
         if alignment == True:
-            colour, red, green, blue = getRGB()
+            colour = getRGB()
             alignment = False #switch alignment back to false
-            print(colour, red, green, blue)
+            print(colour)
             if colour == robot_colour: #implement collection function
                 print('yeboi collect it')
                 leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)
@@ -340,6 +355,8 @@ while robot.step(TIME_STEP) != -1:
                     path.insert(i+2,home)
             elif colour == other_robot_colour: #implement avoidance function
                 print('nah screw you')
+            elif colour == None:
+                print('cant determine')
             # leftSpeed  = 0
             # rightSpeed = 0
             
