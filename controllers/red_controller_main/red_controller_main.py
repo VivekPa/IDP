@@ -219,7 +219,7 @@ def obstacle_check(ds,obstacle):
         # print('thats no moon!')
         obstacle = True
         block_coords = find_block_coords(prelim_coords, getBearing(compass.getValues()), ds)
-    
+
     return block_coords, obstacle
 """
 def reciprocating_sweep(ds):
@@ -259,7 +259,7 @@ def reciprocating_sweep(ds):
     last_known_point = gps.getValues()
 
     return block_coords, obstacle, last_known_point
-
+"""
 def stop():
     """
     This function stops the robot.
@@ -329,7 +329,7 @@ def getRGB():
 while robot.step(TIME_STEP) != -1:
     if i == len(path)-2:
         print('reached the end')
-    
+
     # get current device values
     current_coordinates = np.array(gps.getValues())
     north = compass.getValues()
@@ -338,8 +338,8 @@ while robot.step(TIME_STEP) != -1:
     ds_2_value = ds_right.getValue()
 
     #send gps coordinates to other robot
-    message_robot = [0, *current_coordinates] # 0 - robot's coordinates, 1 - block coordinates 
-    message_robot = struct.pack("4f", *message_robot)
+    message_robot = [0, current_coordinates] # 0 - robot's coordinates, 1 - block coordinates
+    message_robot = struct.pack("4f", message_robot)
     emitter.send(message_robot)
 
     #receive other robot's coordinates
@@ -351,13 +351,13 @@ while robot.step(TIME_STEP) != -1:
             other_robot_coordinates = message[1:]
         elif message[0] == 1:
             list_of_blocks.append(message[1:])
-        
+
         print('Blue robot location:', message)
         receiver.nextPacket() #deletes the head packet
     # Process sensor data here.
     else:
         print('no message')
-    
+
     distance_btw_robots = np.linalg.norm(np.array(current_coordinates) - np.array(other_robot_coordinates))
     print(distance_btw_robots)
     # detect obstacles
@@ -369,7 +369,7 @@ while robot.step(TIME_STEP) != -1:
         atHome = True
     else:
         atHome = False
-    
+
     """ Unloading """
     if atHome and robot.getTime() > 8:  # If the robot is near home after 'return_to_home()'
         unloading = True                # Initiate unloading procedure
@@ -389,65 +389,7 @@ while robot.step(TIME_STEP) != -1:
     else:
         pass
 
-    #if theres a new point that you want to robot to go to that is not on the original path,
-    #insert in the i+2 location in the path
-    #example of left obstacle (just an example)
-    """
-    if current_bearing > 145 and current_bearing < 225: #facing south
-        if left_obstacle == True: # set new coordinte to have a reduced z coordinate
-            message = struct.pack("3f", *current_coordinates)
-            emitter.send(message)
-            print('sent', message)
-            new_coordinates = [current_coordinates[0], current_coordinates[2]-0.4]
-            path.insert(i+2,new_coordinates)
-            print('path edited')
-    """
-    # calculating distance between the desired coordinate and current coordinate
-    desired_coordinates = path[i+2]
-
-
-   
-"""
-
-    MAX_SPEED = 6.28
-    #obstacle Boolean here might be different from the obstacle boolean at the start of this loop due to the previous if statement
-    if obstacle == True:
-        alignment = False
-        cartesian_bearing = bearing_round(getBearing(compass.getValues()))
-        leftSpeed, rightSpeed, alignment = rotateTo(previous_coordinates, current_coordinates, block_coords, current_bearing, alignment)
-        if alignment == True:
-            colour, red, green, blue = getRGB()
-            alignment = False #switch alignment back to false
-            print(colour, red, green, blue)
-            if colour == robot_colour: #implement collection function
-                print('yeboi collect it')
-                leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)
-                if j == i+1: #collected block
-                    obstacle = False
-                    path.insert(i+2, [last_known_point[0] + 0.1 * np.cos(cartesian_bearing), last_known_point[1], last_known_point[2] + 0.1 * np.sin(cartesian_bearing)])
-                    if path_turns == 0:
-                        path.insert(i+3, home)
-                    else:
-                        path.insert(i+3, [last_known_point[0], 0, 1])
-                        path.insert(i+4, np.array(home))
-            elif colour == other_robot_colour: #implement avoidance function
-                print('nah screw you')
-                #append to the list of other colour blocks
-                other_colour_blocks.append(block_coordinates)
-            # leftSpeed  = 0
-            # rightSpeed = 0
-
-            #obstacle = False #change obstacle back to False after collecting the block
-            #print(obstacle)
-            # leftMotor.setVelocity(leftSpeed)
-            # rightMotor.setVelocity(rightSpeed)
-            # print('trying to break')
-            # break
-    else:
-        leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i)
-"""
-
- #check if robot has made a turn
+    #check if robot has made a turn
     coordinates = path[i]
     if coordinates in turnpoints:
         path_turns += 1
@@ -455,7 +397,7 @@ while robot.step(TIME_STEP) != -1:
         print('turned')
 
     MAX_SPEED = 6.28
-    
+
     if unloading == False:
         #obstacle Boolean here might be different from the obstacle boolean at the start of this loop due to the previous if statement
         if obstacle == True and goinghome == False:
@@ -470,15 +412,19 @@ while robot.step(TIME_STEP) != -1:
                     leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)
                     if j == i+1: #collected block
                         obstacle = False
-                        goinghome = True
-                        path.insert(i+2,home)
+                        path.insert(i+2, [last_known_point[0] + 0.1 * np.cos(cartesian_bearing), last_known_point[1], last_known_point[2] + 0.1 * np.sin(cartesian_bearing)])
+                        if path_turns == 0:
+                            path.insert(i+3, home)
+                        else:
+                            path.insert(i+3, [last_known_point[0], 0, 1])
+                            path.insert(i+4, np.array(home))
                 elif colour == other_robot_colour: #implement avoidance function
                     print('nah screw you')
                 elif colour == None:
                     print('cant determine')
                 # leftSpeed  = 0
                 # rightSpeed = 0
-                
+
                 #obstacle = False #change obstacle back to False after collecting the block
                 #print(obstacle)
                 # leftMotor.setVelocity(leftSpeed)
