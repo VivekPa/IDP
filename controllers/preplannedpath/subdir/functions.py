@@ -76,7 +76,8 @@ def moveTo(previous_coordinates, current_coordinates, desired_coordinates, curre
     Arguments: previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i
     Returns: leftSpeed, rightSpeed, i
     """
-    MAX_SPEED = 6.28
+    # MAX_SPEED = 6.28
+    MAX_SPEED = 10
     coordinates_list = [previous_coordinates,current_coordinates,desired_coordinates]
     distance, x = getDistanceandRotation(coordinates_list)
 

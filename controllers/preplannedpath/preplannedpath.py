@@ -16,6 +16,8 @@ TIME_STEP = int(robot.getBasicTimeStep())
 # You should insert a getDevice-like function in order to get the
 # instance of a device of the robot. Something like:
 
+""" Initialise sensors """
+
 leftMotor = robot.getDevice('wheel1')
 rightMotor = robot.getDevice('wheel2')
 leftMotor.setPosition(float('inf'))
@@ -42,21 +44,25 @@ camera_left.enable(TIME_STEP)
 camera_right = robot.getDevice('camera_right')
 camera_right.enable(TIME_STEP)
 
+""" Define Waypoints and Home """
 home = [1,0,1]
 path = [home,home,[0,0,1],[-1,0,1],[-1,0,0.6],[0,0,0.6],[1,0,0.6],[1,0,0.2],[0,0,0.2],[-1,0,0.2]] # always duplicate first point
 #path = [[1,1], [1,1],[0,1],[1,1],[-1,0],[0,0],[-1,-1],[0,0]] # always duplicate first point
-
-i = 0
 atHome      = True               # Home region
+atUnload    = True               # Unloading region
 
 """ State Variables """
 unloading   = False              # Unloading state
-
-obstacle = False
+obstacle = False                 # Obstacle detection state
 goinghome = False
+
+i = 0                            # Path index
+
 previous_coordinates = path[0]
-robot_colour = 2 # 0 - red, 1 - green, 2- blue
+robot_colour = 2                 # 0 - red, 1 - green, 2- blue
 other_robot_colour = 0
+
+deg2rad = 3.14159/180
 
 """
 This section of the code details the functions for detecting an object by 'sweeping'
@@ -129,8 +135,8 @@ def find_obstacle_coords(ds):
     gps_reading = gps.getValues()
     bearing = getBearing(compass.getValues())
     #find absolute angle of detector. remember to convert to radians!
-    ds_absolute_angle = (bearing + ds_attributes[1]) * (3.14159265358929323846264/180)
-    ds_absolute_disp_angle = (bearing + ds_attributes[2]) * (3.14159265358929323846264/180)
+    ds_absolute_angle = (bearing + ds_attributes[1]) * (deg2rad)
+    ds_absolute_disp_angle = (bearing + ds_attributes[2]) * (deg2rad)
     #print(ds_absolute_angle, ds_absolute_disp_angle)
     #find coordinates.
     x_coord = (ds_reading * np.cos(ds_absolute_angle)) + (ds_distance * np.cos(ds_absolute_disp_angle)) + gps_reading[0]
@@ -154,11 +160,11 @@ def find_block_coords(prelim_coords, bearing, ds):
     #directions)
     if ds == 'ds_1':
         #find angle of corner to centre. remember to convert to radians!
-        diagonal_absolute_angle = (bearing_round(bearing) - 45) * (3.14159265358979323846264/180)
+        diagonal_absolute_angle = (bearing_round(bearing) - 45) * (deg2rad)
         x_block = prelim_coords[0] + block_diagonal * np.cos(diagonal_absolute_angle)
         z_block = prelim_coords[1] + block_diagonal * np.sin(diagonal_absolute_angle)
     elif ds == 'ds_2':
-        diagonal_absolute_angle = (bearing_round(bearing) + 45) * (3.14159265358979323846264/180)
+        diagonal_absolute_angle = (bearing_round(bearing) + 45) * (deg2rad)
         x_block = prelim_coords[0] + block_diagonal * np.cos(diagonal_absolute_angle)
         z_block = prelim_coords[1] + block_diagonal * np.sin(diagonal_absolute_angle)
     else:
@@ -185,12 +191,12 @@ def obstacle_check(ds,obstacle):
     lower_wall = wall_coord - wall_tolerance
     upper_wall = wall_coord + wall_tolerance
     if lower_wall <= abs(x_prelim) <= upper_wall or lower_wall <= abs(z_prelim) <= upper_wall:
-        print('all okay! Just a wall')
+        # print('all okay! Just a wall')
         obstacle = False
         block_coords = None
         pass
     else:
-        print('thats no moon!')
+        # print('thats no moon!')
         obstacle = True
         block_coords = find_block_coords(prelim_coords, getBearing(compass.getValues()), ds)
     
@@ -264,6 +270,23 @@ def stop():
 End of search functions
 """
 
+def return_to_home():
+    """
+    This function returns the robot to home.
+    """
+    path.insert(i+2,home)
+
+def unload():
+    """
+    This function allows the collected block to be unloaded by:
+        * Moving the robot back by __ distance
+        * rotate to next waypoint
+    """
+    leftSpeed  = -0.5 * MAX_SPEED
+    rightSpeed = -0.5 * MAX_SPEED
+
+    return leftSpeed, rightSpeed
+
 def getRGB():
     """
     Returns: integer cooresponding to colour with largest pixel value as well individual pixel values
@@ -311,16 +334,18 @@ while robot.step(TIME_STEP) != -1:
     ds_1_value = ds_left.getValue()
     ds_2_value = ds_right.getValue()
 
+    # print(current_coordinates)
+
     # detect obstacles
     right_obstacle = ds_1_value < 1000.0
     left_obstacle = ds_2_value < 1000.0
-    
+
     # Check if the robot is near home
     if np.linalg.norm(np.array(current_coordinates) - np.array(home)) < 0.1:
         atHome = True
     else:
         atHome = False
-    
+
     #call obstacle_check only if obstacle outside of while loop is false
     #potentially changes obstacle to True if it detects a block
     
@@ -356,7 +381,6 @@ while robot.step(TIME_STEP) != -1:
     """
     # calculating distance between the desired coordinate and current coordinate
     desired_coordinates = path[i+2]
-
     MAX_SPEED = 6.28
     
     if unloading == False:
@@ -400,6 +424,7 @@ while robot.step(TIME_STEP) != -1:
             goinghome = False
             unloading = False
             obstacle = False
+
     leftMotor.setVelocity(leftSpeed)
     rightMotor.setVelocity(rightSpeed)
     previous_coordinates = current_coordinates
