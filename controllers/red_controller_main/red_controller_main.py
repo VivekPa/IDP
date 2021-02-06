@@ -37,6 +37,8 @@ ds_right = robot.getDevice('ds_right')
 ds_right.enable(TIME_STEP)
 
 emitter = robot.getDevice('emitter')
+receiver = robot.getDevice('receiver')
+receiver.enable(TIME_STEP)
 
 camera_left = robot.getDevice('camera_left')
 camera_left.enable(TIME_STEP)
@@ -45,11 +47,13 @@ camera_right = robot.getDevice('camera_right')
 camera_right.enable(TIME_STEP)
 
 """ Define Waypoints and Home """
-home = [1,0,1]
+red_base = [1,0,1]
+blue_base = [1,0,-1]
+home = red_base
+other_robot_coordinates = blue_base
 path = [home,home,[0,0,1],[-1,0,1],[-1,0,0.6],[0,0,0.6],[1,0,0.6],[1,0,0.2],[0,0,0.2],[-1,0,0.2]] # always duplicate first point
 #path = [[1,1], [1,1],[0,1],[1,1],[-1,0],[0,0],[-1,-1],[0,0]] # always duplicate first point
 atHome      = True               # Home region
-atUnload    = True               # Unloading region
 
 """ State Variables """
 unloading   = False              # Unloading state
@@ -59,8 +63,8 @@ goinghome = False
 i = 0                            # Path index
 
 previous_coordinates = path[0]
-robot_colour = 2                 # 0 - red, 1 - green, 2- blue
-other_robot_colour = 0
+robot_colour = 0                 # 0 - red, 1 - green, 2- blue
+other_robot_colour = 2
 
 deg2rad = 3.14159/180
 
@@ -325,8 +329,7 @@ def getRGB():
 while robot.step(TIME_STEP) != -1:
     if i == len(path)-2:
         print('reached the end')
-        break
-
+    
     # get current device values
     current_coordinates = gps.getValues()
     north = compass.getValues()
@@ -334,8 +337,29 @@ while robot.step(TIME_STEP) != -1:
     ds_1_value = ds_left.getValue()
     ds_2_value = ds_right.getValue()
 
-    # print(current_coordinates)
+    #send gps coordinates to other robot
+    message_robot = [0, *current_coordinates] # 0 - robot's coordinates, 1 - block coordinates 
+    message_robot = struct.pack("4f", *message_robot)
+    emitter.send(message_robot)
 
+    #receive other robot's coordinates
+    #print('Receiver Queue length:'  , receiver.getQueueLength())
+    if receiver.getQueueLength() > 0:
+        message = receiver.getData()
+        message = list(struct.unpack("4f",message))
+        if message[0] == 0:
+            other_robot_coordinates = message[1:]
+        elif message[0] == 1:
+            list_of_blocks.append(message[1:])
+        
+        print('Blue robot location:', message)
+        receiver.nextPacket() #deletes the head packet
+    # Process sensor data here.
+    else:
+        print('no message')
+    
+    distance_btw_robots = np.linalg.norm(np.array(current_coordinates) - np.array(other_robot_coordinates))
+    print(distance_btw_robots)
     # detect obstacles
     right_obstacle = ds_1_value < 1000.0
     left_obstacle = ds_2_value < 1000.0
@@ -345,15 +369,14 @@ while robot.step(TIME_STEP) != -1:
         atHome = True
     else:
         atHome = False
-
-    #call obstacle_check only if obstacle outside of while loop is false
-    #potentially changes obstacle to True if it detects a block
     
     """ Unloading """
     if atHome and robot.getTime() > 8:  # If the robot is near home after 'return_to_home()'
         unloading = True                # Initiate unloading procedure
         reverse_coords = calc_reverse_coords(current_coordinates, current_bearing)
 
+    #call obstacle_check only if obstacle outside of while loop and unloading is false
+    #potentially changes obstacle to True if it detects a block
     if obstacle == False and unloading == False:
         if right_obstacle == True:
             block_coords, obstacle = obstacle_check('ds_1', obstacle)
@@ -414,13 +437,14 @@ while robot.step(TIME_STEP) != -1:
                 # break
         # elif obstacle == True and goinghome == True:
         #     print('trying to avoid')
-            #implement avoidance function
+        #     #implement avoidance function
         else:
             leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i)
     elif unloading == True:
         leftSpeed, rightSpeed, j = reverseTo(previous_coordinates, current_coordinates, reverse_coords, i)
         if j == i + 1:
             i += 1
+            #finish unloading, reset all state variables
             goinghome = False
             unloading = False
             obstacle = False

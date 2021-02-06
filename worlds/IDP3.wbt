@@ -18,8 +18,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.4025561759985049 -0.8190164340355386 -0.4088527925123793 1.9313819591538393
-  position -2.3361854678620464 3.5569402564372172 -0.2124955531469016
+  orientation -0.45134140331957384 -0.7805374539225887 -0.43249534179405985 1.913796384018382
+  position -2.315695943984588 4.044984222497331 -0.40953728374640774
 }
 TexturedBackground {
 }
@@ -31,7 +31,7 @@ Floor {
   }
 }
 DEF Block_R1 Solid {
-  translation 0.974304 0.05 -1.16492
+  translation 0.93579 0.05 0.657746
   children [
     DEF BOX_R Shape {
       appearance PBRAppearance {
@@ -50,7 +50,7 @@ DEF Block_R1 Solid {
   }
 }
 DEF Block_R2 Solid {
-  translation 1.05729 0.05 -1.15247
+  translation -0.827973 0.05 0.546188
   children [
     USE BOX_R
   ]
@@ -61,7 +61,7 @@ DEF Block_R2 Solid {
   }
 }
 DEF Block_R3 Solid {
-  translation 0.862838 0.05 -1.17532
+  translation -0.0170489 0.05 0.158592
   children [
     USE BOX_R
   ]
@@ -71,7 +71,7 @@ DEF Block_R3 Solid {
   }
 }
 DEF Block_R4 Solid {
-  translation 1.12595 0.05 -1.11206
+  translation 0.115882 0.05 1.0411
   children [
     USE BOX_R
   ]
@@ -81,7 +81,7 @@ DEF Block_R4 Solid {
   }
 }
 DEF Block_B1 Solid {
-  translation 1.08049 0.05 -0.754345
+  translation 0.118785 0.05 -0.986767
   children [
     DEF BOX_B Shape {
       appearance PBRAppearance {
@@ -99,7 +99,7 @@ DEF Block_B1 Solid {
   }
 }
 DEF Block_B2 Solid {
-  translation 0.107458 0.05 1.05632
+  translation 0.830088 0.05 -0.256637
   children [
     USE BOX_B
   ]
@@ -109,7 +109,7 @@ DEF Block_B2 Solid {
   }
 }
 DEF Block_B3 Solid {
-  translation -1.1118 0.05 0.610411
+  translation -0.776018 0.05 -0.848759
   children [
     USE BOX_B
   ]
@@ -119,7 +119,7 @@ DEF Block_B3 Solid {
   }
 }
 DEF Block_B4 Solid {
-  translation 0.794934 0.05 0.329663
+  translation -0.0261706 0.05 -0.484386
   children [
     USE BOX_B
   ]
@@ -406,7 +406,7 @@ Robot {
   boundingObject USE BODY
   physics Physics {
   }
-  controller ""
+  controller "blue_controller"
 }
 Robot {
   translation 1 0.05 1
@@ -432,7 +432,7 @@ Robot {
     }
     DEF BODY Shape {
       appearance PBRAppearance {
-        baseColor 0 0.5 1
+        baseColor 1 0 0
         metalness 0
       }
       geometry Box {
@@ -616,5 +616,5 @@ Robot {
   boundingObject USE BODY
   physics Physics {
   }
-  controller "preplannedpath"
+  controller "red_controller_main"
 }
