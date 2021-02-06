@@ -48,6 +48,7 @@ path = [home,home,[0,0,1],[-1,0,1],[-1,0,0.6],[0,0,0.6],[1,0,0.6],[1,0,0.2],[0,0
 
 i = 0
 obstacle = False
+goinghome = False
 previous_coordinates = path[0]
 robot_colour = 2 # 0 - red, 1 - green, 2- blue
 other_robot_colour = 0
@@ -340,7 +341,7 @@ while robot.step(TIME_STEP) != -1:
     MAX_SPEED = 6.28
     
     #obstacle Boolean here might be different from the obstacle boolean at the start of this loop due to the previous if statement
-    if obstacle == True:
+    if obstacle == True and goinghome == False:
         alignment = False
         leftSpeed, rightSpeed, alignment = rotateTo(previous_coordinates, current_coordinates, block_coords, current_bearing, alignment)
         if alignment == True:
@@ -352,6 +353,7 @@ while robot.step(TIME_STEP) != -1:
                 leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)
                 if j == i+1: #collected block
                     obstacle = False
+                    goinghome = True
                     path.insert(i+2,home)
             elif colour == other_robot_colour: #implement avoidance function
                 print('nah screw you')
@@ -366,6 +368,9 @@ while robot.step(TIME_STEP) != -1:
             # rightMotor.setVelocity(rightSpeed)
             # print('trying to break')
             # break
+    elif obstacle == True and goinghome == True:
+        print('trying to avoid')
+        #implement avoidance function
     else:
         leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i)
     leftMotor.setVelocity(leftSpeed)
