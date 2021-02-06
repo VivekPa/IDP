@@ -53,10 +53,11 @@ other_robot_colour = 0
 block_coords = []
 #initialise block list
 other_colour_blocks = []
-
+#declare last cartesian bearing
+cartesian_bearing = []
 #declare turn variable to decide on path home
 path_turns = 0
-turnpoints = [np.array([-1, 0, 0.6]), np.array([1, 0, 0.2])]
+turnpoints = [[-1, 0, 0.6], [1, 0, 0.2]]
 
 """
 This section of the code details the functions for detecting an object by 'sweeping'
@@ -281,23 +282,18 @@ while robot.step(TIME_STEP) != -1:
     desired_coordinates = path[i+2]
 
     #check if robot has made a turn
-    coordinates = path[i+2]
-    for turnpoint in turnpoints:
-        for i in range(0,2,1):
-            if coordinates[i] == turnpoint[i]:
-                turn = True
-            else:
-                turn = False
-                break
-        if turn == True:
-            path_turns += 1
-            turnpoints.pop(0)
-            print("turned")
+    coordinates = path[i]
+    if coordinates in turnpoints:
+        path_turns += 1
+        path.pop(0)
+        print('turned')
+
 
     MAX_SPEED = 6.28
     #obstacle Boolean here might be different from the obstacle boolean at the start of this loop due to the previous if statement
     if obstacle == True:
         alignment = False
+        cartesian_bearing = bearing_round(getBearing(compass.getValues()))
         leftSpeed, rightSpeed, alignment = rotateTo(previous_coordinates, current_coordinates, block_coords, current_bearing, alignment)
         if alignment == True:
             colour, red, green, blue = getRGB()
@@ -308,9 +304,9 @@ while robot.step(TIME_STEP) != -1:
                 leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)
                 if j == i+1: #collected block
                     obstacle = False
-                    path.insert(i+2, last_known_point)
+                    path.insert(i+2, [last_known_point[0] + 0.1 * np.cos(cartesian_bearing), last_known_point[1], last_known_point[2] + 0.1 * np.sin(cartesian_bearing)])
                     if path_turns == 0:
-                        pass #path.insert(i+3, home)
+                        path.insert(i+3, home)
                     else:
                         path.insert(i+3, [last_known_point[0], 0, 1])
                         path.insert(i+4, np.array(home))
