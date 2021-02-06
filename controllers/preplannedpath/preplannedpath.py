@@ -54,8 +54,10 @@ atUnload    = True               # Unloading region
 """ State Variables """
 unloading   = False              # Unloading state
 obstacle = False                 # Obstacle detection state
+goinghome = False
 
 i = 0                            # Path index
+
 previous_coordinates = path[0]
 robot_colour = 2                 # 0 - red, 1 - green, 2- blue
 other_robot_colour = 0
@@ -296,6 +298,8 @@ def getRGB():
     image_right = camera_right.getImageArray()
     RGB_left = image_left[0][0]
     RGB_right = image_right[0][0]
+    print(RGB_left)
+    print(RGB_right)
     colour_left = RGB_left.index(max(RGB_left))
     colour_right = RGB_right.index(max(RGB_right))
     if colour_left == colour_right:
@@ -342,15 +346,15 @@ while robot.step(TIME_STEP) != -1:
     else:
         atHome = False
 
-    # Check if the robot is in the Unloading region
-    if np.linalg.norm(np.array(current_coordinates) - np.array(home)) < 0.3:
-        atUnload = True
-    else:
-        atUnload = False
-
     #call obstacle_check only if obstacle outside of while loop is false
     #potentially changes obstacle to True if it detects a block
-    if obstacle == False:
+    
+    """ Unloading """
+    if atHome and robot.getTime() > 8:  # If the robot is near home after 'return_to_home()'
+        unloading = True                # Initiate unloading procedure
+        reverse_coords = calc_reverse_coords(current_coordinates, current_bearing)
+
+    if obstacle == False and unloading == False:
         if right_obstacle == True:
             block_coords, obstacle = obstacle_check('ds_1', obstacle)
         else:
@@ -377,51 +381,49 @@ while robot.step(TIME_STEP) != -1:
     """
     # calculating distance between the desired coordinate and current coordinate
     desired_coordinates = path[i+2]
-
-    # MAX_SPEED = 6.28
-    MAX_SPEED = 10
-
-    """ Obstacle Detection and Alignment """
-    #obstacle Boolean here might be different from the obstacle boolean at the start of this loop due to the previous if statement
-    if obstacle == True and unloading == False:
-        print("Obstacle Detection and Alignment")
-        alignment = False
-        leftSpeed, rightSpeed, alignment = rotateTo(previous_coordinates, current_coordinates, block_coords, current_bearing, alignment)
-        if alignment == True:
-            colour = getRGB()
-            alignment = False #switch alignment back to false
-            print(colour)
-            if colour == robot_colour: #implement collection function
-                print('yeboi collect it')
-                leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)
-                if j == i+1: #collected block
-                    obstacle = False
-                    return_to_home()
-            elif colour == other_robot_colour: #implement avoidance function
-                print('nah screw you')
-            elif colour == None:
-                print('cant determine')
-            # leftSpeed  = 0
-            # rightSpeed = 0
-            
-            #obstacle = False #change obstacle back to False after collecting the block
-            #print(obstacle)
-            # leftMotor.setVelocity(leftSpeed)
-            # rightMotor.setVelocity(rightSpeed)
-            # print('trying to break')
-            # break
-    else:
-        leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i)
-
-    """ Unloading """
-    if atHome and robot.getTime() > 8:  # If the robot is near home after 'return_to_home()'
-        unloading = True                # Initiate unloading procedure
-
-    if unloading:
-        leftSpeed, rightSpeed  = unload()   
+    MAX_SPEED = 6.28
     
-    if atUnload == False:               # Once the robot moves backwards past the unloading region,
-        unloading = False               # Stop the unloading procedure
+    if unloading == False:
+        #obstacle Boolean here might be different from the obstacle boolean at the start of this loop due to the previous if statement
+        if obstacle == True and goinghome == False:
+            alignment = False
+            leftSpeed, rightSpeed, alignment = rotateTo(previous_coordinates, current_coordinates, block_coords, current_bearing, alignment)
+            if alignment == True:
+                colour = getRGB()
+                alignment = False #switch alignment back to false
+                print(colour)
+                if colour == robot_colour: #implement collection function
+                    print('yeboi collect it')
+                    leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)
+                    if j == i+1: #collected block
+                        obstacle = False
+                        goinghome = True
+                        path.insert(i+2,home)
+                elif colour == other_robot_colour: #implement avoidance function
+                    print('nah screw you')
+                elif colour == None:
+                    print('cant determine')
+                # leftSpeed  = 0
+                # rightSpeed = 0
+                
+                #obstacle = False #change obstacle back to False after collecting the block
+                #print(obstacle)
+                # leftMotor.setVelocity(leftSpeed)
+                # rightMotor.setVelocity(rightSpeed)
+                # print('trying to break')
+                # break
+        # elif obstacle == True and goinghome == True:
+        #     print('trying to avoid')
+            #implement avoidance function
+        else:
+            leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i)
+    elif unloading == True:
+        leftSpeed, rightSpeed, j = reverseTo(previous_coordinates, current_coordinates, reverse_coords, i)
+        if j == i + 1:
+            i += 1
+            goinghome = False
+            unloading = False
+            obstacle = False
 
     leftMotor.setVelocity(leftSpeed)
     rightMotor.setVelocity(rightSpeed)
