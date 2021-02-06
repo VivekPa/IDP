@@ -2,7 +2,7 @@
 
 # You may need to import some classes of the controller module. Ex:
 from controller import Robot, Motor, DistanceSensor, GPS, Emitter, Receiver, Camera
-from subdir.functions import getBearing, getDistanceandRotation, moveTo, get_gps_xz, bearing_round, rotateTo
+from subdir.functions import *
 import math
 import struct #to convert native python data types into a string of bytes and vice versa
 import numpy as np
@@ -15,6 +15,8 @@ TIME_STEP = int(robot.getBasicTimeStep())
 
 # You should insert a getDevice-like function in order to get the
 # instance of a device of the robot. Something like:
+
+""" Initialise sensors """
 
 leftMotor = robot.getDevice('wheel1')
 rightMotor = robot.getDevice('wheel2')
@@ -35,19 +37,36 @@ ds_right = robot.getDevice('ds_right')
 ds_right.enable(TIME_STEP)
 
 emitter = robot.getDevice('emitter')
+receiver = robot.getDevice('receiver')
+receiver.enable(TIME_STEP)
 
-camera = robot.getDevice('camera')
-camera.enable(TIME_STEP)
+camera_left = robot.getDevice('camera_left')
+camera_left.enable(TIME_STEP)
 
-home = [1,0,1]
+camera_right = robot.getDevice('camera_right')
+camera_right.enable(TIME_STEP)
+
+""" Define Waypoints and Home """
+red_base = [1,0,1]
+blue_base = [1,0,-1]
+home = red_base
+other_robot_coordinates = blue_base
 path = [home,home,[0,0,1],[-1,0,1],[-1,0,0.6],[0,0,0.6],[1,0,0.6],[1,0,0.2],[0,0,0.2],[-1,0,0.2]] # always duplicate first point
 #path = [[1,1], [1,1],[0,1],[1,1],[-1,0],[0,0],[-1,-1],[0,0]] # always duplicate first point
+atHome      = True               # Home region
 
-i = 0
-obstacle = False
+""" State Variables """
+unloading   = False              # Unloading state
+obstacle = False                 # Obstacle detection state
+goinghome = False
+
+i = 0                            # Path index
+
 previous_coordinates = path[0]
-robot_colour = 2 # 0 - red, 1 - green, 2- blue
-other_robot_colour = 0
+robot_colour = 0                 # 0 - red, 1 - green, 2- blue
+other_robot_colour = 2
+
+deg2rad = 3.14159/180
 
 #initialise 'active block coordinates'
 block_coords = []
@@ -130,8 +149,8 @@ def find_obstacle_coords(ds):
     gps_reading = gps.getValues()
     bearing = getBearing(compass.getValues())
     #find absolute angle of detector. remember to convert to radians!
-    ds_absolute_angle = (bearing + ds_attributes[1]) * (3.14159265358929323846264/180)
-    ds_absolute_disp_angle = (bearing + ds_attributes[2]) * (3.14159265358929323846264/180)
+    ds_absolute_angle = (bearing + ds_attributes[1]) * (deg2rad)
+    ds_absolute_disp_angle = (bearing + ds_attributes[2]) * (deg2rad)
     #print(ds_absolute_angle, ds_absolute_disp_angle)
     #find coordinates.
     x_coord = (ds_reading * np.cos(ds_absolute_angle)) + (ds_distance * np.cos(ds_absolute_disp_angle)) + gps_reading[0]
@@ -155,11 +174,11 @@ def find_block_coords(prelim_coords, bearing, ds):
     #directions)
     if ds == 'ds_1':
         #find angle of corner to centre. remember to convert to radians!
-        diagonal_absolute_angle = (bearing_round(bearing) - 45) * (3.14159265358979323846264/180)
+        diagonal_absolute_angle = (bearing_round(bearing) - 45) * (deg2rad)
         x_block = prelim_coords[0] + block_diagonal * np.cos(diagonal_absolute_angle)
         z_block = prelim_coords[1] + block_diagonal * np.sin(diagonal_absolute_angle)
     elif ds == 'ds_2':
-        diagonal_absolute_angle = (bearing_round(bearing) + 45) * (3.14159265358979323846264/180)
+        diagonal_absolute_angle = (bearing_round(bearing) + 45) * (deg2rad)
         x_block = prelim_coords[0] + block_diagonal * np.cos(diagonal_absolute_angle)
         z_block = prelim_coords[1] + block_diagonal * np.sin(diagonal_absolute_angle)
     else:
@@ -196,6 +215,41 @@ def obstacle_check(ds,obstacle):
             if (coords[0] - 2.5 - obstacle_tolerance) <= x_coords <= (coords[0] + 2.5 + obstacle_tolerance) and (coords[2] - 2.5 - obstacle_tolerance) <= (coords[2] + 2.5 + obstacle_tolerance):
                 print('Deja vu!')
                 obstacle = False
+
+        # print('thats no moon!')
+        obstacle = True
+        block_coords = find_block_coords(prelim_coords, getBearing(compass.getValues()), ds)
+    
+    return block_coords, obstacle
+"""
+def reciprocating_sweep(ds):
+"""
+    #A function which the robot uses to find the edge of a detected block. It returns the coordinates of the block.
+
+    #Arguments: ds (a string which denotes the distance sensor which detected an obstacle)
+"""
+    #Retrieve attributes
+    ds_attributes = get_attributes(ds)
+    ds_distance = ds_attributes[0]
+    ds_absolute_angle = getBearing(compass.getValues()) + ds_attributes[1]
+    ds_absolute_disp_angle = getBearing(compass.getValues()) + ds_attributes[2]
+    #move back 80mm
+    #find coordinates 80mm behind
+    back_coords = [(gps.getValues()[0] - 0.08 * np.sin(getBearing(compass.getValues()))), (gps.getValues()[2] - 0.08 * np.cos(getBearing(compass.getValues())))]
+    moveto(get_gps_xz(gps.getValues()), get_gps_xz(gps.getValues()), back_coords(), getBearing(), i)
+    #move forwards 80mm, 5mm at a time
+    for d in range(0, 0.08, 0.005):
+        #find coordinates of point on line sensor
+        x_coord = ds_read(ds) * np.sin(ds_absolute_angle) + ds_distance * np.sin(ds_absolute_disp_angle) + get_gps_xz(gps.getValues())[0]
+        z_coord = ds_read(ds) * np.cos(ds_absolute_angle) + ds_distance * np.cos(ds_absolute_disp_angle) + get_gps_xz(gps.getValues())[1]
+        measured_coords = [x_coord, z_coord]
+        measured_distance = ds_read(ds)
+        #do not check the first time as nothing to compare
+        if d > 0:
+            #check if a jump occurs in the sensor readings, which indicates the edge
+            if measured_distance < prev_distance - 0.01:
+                block_coords = measured_coords
+>>>>>>> main:controllers/red_controller_main/red_controller_main.py
                 break
         else:
             #otherwise its a new obstacle
@@ -217,6 +271,23 @@ def stop():
 End of search functions
 """
 
+def return_to_home():
+    """
+    This function returns the robot to home.
+    """
+    path.insert(i+2,home)
+
+def unload():
+    """
+    This function allows the collected block to be unloaded by:
+        * Moving the robot back by __ distance
+        * rotate to next waypoint
+    """
+    leftSpeed  = -0.5 * MAX_SPEED
+    rightSpeed = -0.5 * MAX_SPEED
+
+    return leftSpeed, rightSpeed
+
 def getRGB():
     """
     Returns: integer cooresponding to colour with largest pixel value as well individual pixel values
@@ -224,6 +295,7 @@ def getRGB():
         1: green
         2: blue
     """
+
     image = camera.getImageArray()
     RGB = image[0][0]
     colour = RGB.index(max(RGB))
@@ -231,15 +303,33 @@ def getRGB():
     green = RGB[1]
     blue  = RGB[2]
 
-    return colour, red, green, blue
+    image_left = camera_left.getImageArray()
+    image_right = camera_right.getImageArray()
+    RGB_left = image_left[0][0]
+    RGB_right = image_right[0][0]
+    print(RGB_left)
+    print(RGB_right)
+    colour_left = RGB_left.index(max(RGB_left))
+    colour_right = RGB_right.index(max(RGB_right))
+    if colour_left == colour_right:
+        colour = colour_left
+    elif colour_left != 1 and colour_right != 1:
+        print('error! one red one blue')
+        colour = None
+    else:
+        if colour_left == 1:
+            colour = colour_right
+        else:
+            colour = colour_left
+
+    return colour  #, red, green, blue
 
 
 # - perform simulation steps until Webots is stopping the controller
 while robot.step(TIME_STEP) != -1:
     if i == len(path)-2:
         print('reached the end')
-        break
-
+    
     # get current device values
     current_coordinates = np.array(gps.getValues())
     north = compass.getValues()
@@ -247,13 +337,47 @@ while robot.step(TIME_STEP) != -1:
     ds_1_value = ds_left.getValue()
     ds_2_value = ds_right.getValue()
 
+    #send gps coordinates to other robot
+    message_robot = [0, *current_coordinates] # 0 - robot's coordinates, 1 - block coordinates 
+    message_robot = struct.pack("4f", *message_robot)
+    emitter.send(message_robot)
+
+    #receive other robot's coordinates
+    #print('Receiver Queue length:'  , receiver.getQueueLength())
+    if receiver.getQueueLength() > 0:
+        message = receiver.getData()
+        message = list(struct.unpack("4f",message))
+        if message[0] == 0:
+            other_robot_coordinates = message[1:]
+        elif message[0] == 1:
+            list_of_blocks.append(message[1:])
+        
+        print('Blue robot location:', message)
+        receiver.nextPacket() #deletes the head packet
+    # Process sensor data here.
+    else:
+        print('no message')
+    
+    distance_btw_robots = np.linalg.norm(np.array(current_coordinates) - np.array(other_robot_coordinates))
+    print(distance_btw_robots)
     # detect obstacles
     right_obstacle = ds_1_value < 1000.0
     left_obstacle = ds_2_value < 1000.0
 
-    #call obstacle_check only if obstacle outside of while loop is false
+    # Check if the robot is near home
+    if np.linalg.norm(np.array(current_coordinates) - np.array(home)) < 0.1:
+        atHome = True
+    else:
+        atHome = False
+    
+    """ Unloading """
+    if atHome and robot.getTime() > 8:  # If the robot is near home after 'return_to_home()'
+        unloading = True                # Initiate unloading procedure
+        reverse_coords = calc_reverse_coords(current_coordinates, current_bearing)
+
+    #call obstacle_check only if obstacle outside of while loop and unloading is false
     #potentially changes obstacle to True if it detects a block
-    if obstacle == False:
+    if obstacle == False and unloading == False:
         if right_obstacle == True:
             block_coords, obstacle, last_known_point = obstacle_check('ds_1', obstacle)
         else:
@@ -281,13 +405,9 @@ while robot.step(TIME_STEP) != -1:
     # calculating distance between the desired coordinate and current coordinate
     desired_coordinates = path[i+2]
 
-    #check if robot has made a turn
-    coordinates = path[i]
-    if coordinates in turnpoints:
-        path_turns += 1
-        path.pop(0)
-        print('turned')
 
+   
+"""
 
     MAX_SPEED = 6.28
     #obstacle Boolean here might be different from the obstacle boolean at the start of this loop due to the previous if statement
@@ -325,6 +445,60 @@ while robot.step(TIME_STEP) != -1:
             # break
     else:
         leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i)
+"""
+
+ #check if robot has made a turn
+    coordinates = path[i]
+    if coordinates in turnpoints:
+        path_turns += 1
+        path.pop(0)
+        print('turned')
+
+    MAX_SPEED = 6.28
+    
+    if unloading == False:
+        #obstacle Boolean here might be different from the obstacle boolean at the start of this loop due to the previous if statement
+        if obstacle == True and goinghome == False:
+            alignment = False
+            leftSpeed, rightSpeed, alignment = rotateTo(previous_coordinates, current_coordinates, block_coords, current_bearing, alignment)
+            if alignment == True:
+                colour = getRGB()
+                alignment = False #switch alignment back to false
+                print(colour)
+                if colour == robot_colour: #implement collection function
+                    print('yeboi collect it')
+                    leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)
+                    if j == i+1: #collected block
+                        obstacle = False
+                        goinghome = True
+                        path.insert(i+2,home)
+                elif colour == other_robot_colour: #implement avoidance function
+                    print('nah screw you')
+                elif colour == None:
+                    print('cant determine')
+                # leftSpeed  = 0
+                # rightSpeed = 0
+                
+                #obstacle = False #change obstacle back to False after collecting the block
+                #print(obstacle)
+                # leftMotor.setVelocity(leftSpeed)
+                # rightMotor.setVelocity(rightSpeed)
+                # print('trying to break')
+                # break
+        # elif obstacle == True and goinghome == True:
+        #     print('trying to avoid')
+        #     #implement avoidance function
+        else:
+            leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i)
+    elif unloading == True:
+        leftSpeed, rightSpeed, j = reverseTo(previous_coordinates, current_coordinates, reverse_coords, i)
+        if j == i + 1:
+            i += 1
+            #finish unloading, reset all state variables
+            goinghome = False
+            unloading = False
+            obstacle = False
+
     leftMotor.setVelocity(leftSpeed)
     rightMotor.setVelocity(rightSpeed)
     previous_coordinates = current_coordinates

@@ -1,4 +1,8 @@
-PROTO TwoWheelRobotv3 [
+#VRML_SIM R2021a utf8
+# documentation url: https://github.com/VivekPa/IDP
+# IDP two-wheeled robot
+
+PROTO HungryHippo [
 ]
 {
 Robot {
@@ -128,7 +132,7 @@ Robot {
           }
         }
         DistanceSensor {
-          translation -0.006 0.015 0.08
+          translation -0.001 -0.015 0.08
           rotation 0 1 0 -2.61799
           children [
             DEF DS Shape {
@@ -148,7 +152,7 @@ Robot {
           ]
         }
         DistanceSensor {
-          translation -0.144 0.015 0.08
+          translation -0.149 -0.015 0.08
           rotation 0 1 0 -0.5236
           children [
             USE DS
@@ -160,11 +164,20 @@ Robot {
           ]
         }
         Camera {
-          translation -0.075 -0.015 0
+          translation -0.1 -0.015 0
           rotation 0 1 0 3.14159
           children [
             USE DS
           ]
+          name "camera_left"
+        }
+        Camera {
+          translation -0.05 -0.015 0
+          rotation 0 1 0 3.14159
+          children [
+            USE DS
+          ]
+          name "camera_right"
         }
         Emitter {
           translation -0.075 -0.015 0
@@ -182,7 +195,7 @@ Robot {
       ]
     }
   ]
-  name "robotv2(1)"
+  name "robotv2"
   boundingObject USE BODY
   physics Physics {
   }
