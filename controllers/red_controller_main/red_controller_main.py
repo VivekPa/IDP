@@ -195,6 +195,8 @@ def obstacle_check(ds,obstacle):
     Arguments: ds (a string which denotes the distance sensor which detected an obstacle)
     Returns: block_coords, obstacle (Boolean)
     """
+    #find current coordinates
+    last_known_point = gps.getValues()
     x_prelim, z_prelim = find_obstacle_coords(ds)
     prelim_coords = [x_prelim, z_prelim]
     # print(prelim_coords, gps.getValues())
@@ -220,7 +222,7 @@ def obstacle_check(ds,obstacle):
         obstacle = True
         block_coords = find_block_coords(prelim_coords, getBearing(compass.getValues()), ds)
 
-    return block_coords, obstacle
+    return block_coords, obstacle, last_known_point
 """
 def reciprocating_sweep(ds):
 """
