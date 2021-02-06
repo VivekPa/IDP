@@ -2,7 +2,7 @@
 
 # You may need to import some classes of the controller module. Ex:
 from controller import Robot, Motor, DistanceSensor, GPS, Emitter, Receiver, Camera
-from subdir.functions import getBearing, getDistanceandRotation, moveTo, get_gps_xz, bearing_round, rotateTo
+from subdir.functions import *
 import math
 import struct #to convert native python data types into a string of bytes and vice versa
 import numpy as np
@@ -47,6 +47,11 @@ path = [home,home,[0,0,1],[-1,0,1],[-1,0,0.6],[0,0,0.6],[1,0,0.6],[1,0,0.2],[0,0
 #path = [[1,1], [1,1],[0,1],[1,1],[-1,0],[0,0],[-1,-1],[0,0]] # always duplicate first point
 
 i = 0
+atHome      = True               # Home region
+
+""" State Variables """
+unloading   = False              # Unloading state
+
 obstacle = False
 goinghome = False
 previous_coordinates = path[0]
@@ -270,6 +275,8 @@ def getRGB():
     image_right = camera_right.getImageArray()
     RGB_left = image_left[0][0]
     RGB_right = image_right[0][0]
+    print(RGB_left)
+    print(RGB_right)
     colour_left = RGB_left.index(max(RGB_left))
     colour_right = RGB_right.index(max(RGB_right))
     if colour_left == colour_right:
@@ -307,10 +314,22 @@ while robot.step(TIME_STEP) != -1:
     # detect obstacles
     right_obstacle = ds_1_value < 1000.0
     left_obstacle = ds_2_value < 1000.0
-
+    
+    # Check if the robot is near home
+    if np.linalg.norm(np.array(current_coordinates) - np.array(home)) < 0.1:
+        atHome = True
+    else:
+        atHome = False
+    
     #call obstacle_check only if obstacle outside of while loop is false
     #potentially changes obstacle to True if it detects a block
-    if obstacle == False:
+    
+    """ Unloading """
+    if atHome and robot.getTime() > 8:  # If the robot is near home after 'return_to_home()'
+        unloading = True                # Initiate unloading procedure
+        reverse_coords = calc_reverse_coords(current_coordinates, current_bearing)
+
+    if obstacle == False and unloading == False:
         if right_obstacle == True:
             block_coords, obstacle = obstacle_check('ds_1', obstacle)
         else:
@@ -340,39 +359,47 @@ while robot.step(TIME_STEP) != -1:
 
     MAX_SPEED = 6.28
     
-    #obstacle Boolean here might be different from the obstacle boolean at the start of this loop due to the previous if statement
-    if obstacle == True and goinghome == False:
-        alignment = False
-        leftSpeed, rightSpeed, alignment = rotateTo(previous_coordinates, current_coordinates, block_coords, current_bearing, alignment)
-        if alignment == True:
-            colour = getRGB()
-            alignment = False #switch alignment back to false
-            print(colour)
-            if colour == robot_colour: #implement collection function
-                print('yeboi collect it')
-                leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)
-                if j == i+1: #collected block
-                    obstacle = False
-                    goinghome = True
-                    path.insert(i+2,home)
-            elif colour == other_robot_colour: #implement avoidance function
-                print('nah screw you')
-            elif colour == None:
-                print('cant determine')
-            # leftSpeed  = 0
-            # rightSpeed = 0
-            
-            #obstacle = False #change obstacle back to False after collecting the block
-            #print(obstacle)
-            # leftMotor.setVelocity(leftSpeed)
-            # rightMotor.setVelocity(rightSpeed)
-            # print('trying to break')
-            # break
-    elif obstacle == True and goinghome == True:
-        print('trying to avoid')
-        #implement avoidance function
-    else:
-        leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i)
+    if unloading == False:
+        #obstacle Boolean here might be different from the obstacle boolean at the start of this loop due to the previous if statement
+        if obstacle == True and goinghome == False:
+            alignment = False
+            leftSpeed, rightSpeed, alignment = rotateTo(previous_coordinates, current_coordinates, block_coords, current_bearing, alignment)
+            if alignment == True:
+                colour = getRGB()
+                alignment = False #switch alignment back to false
+                print(colour)
+                if colour == robot_colour: #implement collection function
+                    print('yeboi collect it')
+                    leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)
+                    if j == i+1: #collected block
+                        obstacle = False
+                        goinghome = True
+                        path.insert(i+2,home)
+                elif colour == other_robot_colour: #implement avoidance function
+                    print('nah screw you')
+                elif colour == None:
+                    print('cant determine')
+                # leftSpeed  = 0
+                # rightSpeed = 0
+                
+                #obstacle = False #change obstacle back to False after collecting the block
+                #print(obstacle)
+                # leftMotor.setVelocity(leftSpeed)
+                # rightMotor.setVelocity(rightSpeed)
+                # print('trying to break')
+                # break
+        # elif obstacle == True and goinghome == True:
+        #     print('trying to avoid')
+            #implement avoidance function
+        else:
+            leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i)
+    elif unloading == True:
+        leftSpeed, rightSpeed, j = reverseTo(previous_coordinates, current_coordinates, reverse_coords, i)
+        if j == i + 1:
+            i += 1
+            goinghome = False
+            unloading = False
+            obstacle = False
     leftMotor.setVelocity(leftSpeed)
     rightMotor.setVelocity(rightSpeed)
     previous_coordinates = current_coordinates
