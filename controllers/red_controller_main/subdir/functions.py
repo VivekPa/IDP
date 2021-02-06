@@ -25,7 +25,7 @@ def bearing_round(bearing, base = 90):
     """
     Returns the bearing rounded to the nearest 90 degrees.
     """
-    rounded_bearing =  base * round(bearing / base)
+    rounded_bearing = base * round(bearing / base)
     return rounded_bearing
 
 def getDistanceandRotation(subpath):
@@ -100,10 +100,13 @@ def moveTo(previous_coordinates, current_coordinates, desired_coordinates, curre
         bearing_error += 360
 
     if bearing_error < 0.5 and bearing_error > -0.5:
-        if distance < 0.08: #stop once desired coordinate is nearby
+        if distance < 0.06: #stop once desired coordinate is nearby
             leftSpeed  = 0
             rightSpeed = 0
             i += 1
+        elif distance < 1.0: #stop once desired coordinate is nearby
+            leftSpeed  = 0.3 * MAX_SPEED
+            rightSpeed = 0.3 * MAX_SPEED
         else: #if no bearing error and not near desired coordinate, just go straight
             leftSpeed  = 0.5 * MAX_SPEED
             rightSpeed = 0.5 * MAX_SPEED
@@ -126,7 +129,7 @@ def rotateTo(previous_coordinates, current_coordinates, desired_coordinates, cur
     MAX_SPEED = 6.28
 
     # calculating desired bearing to get to desired coordinate from current coordinate
-    ref_coordinates = [current_coordinates[0]+1, current_coordinates[1] , current_coordinates[2]] # to make previous vector always be [-1,0,0]
+    ref_coordinates = np.array([current_coordinates[0]+1, current_coordinates[1] , current_coordinates[2]]) # to make previous vector always be [-1,0,0]
     coordinates_list2 = [ref_coordinates,current_coordinates,desired_coordinates]
     x,angle = getDistanceandRotation(coordinates_list2)
     # print('angle',angle)
@@ -156,3 +159,42 @@ def rotateTo(previous_coordinates, current_coordinates, desired_coordinates, cur
         rightSpeed = 0.5 * MAX_SPEED
 
     return leftSpeed, rightSpeed, alignment
+
+def reverseTo(previous_coordinates, current_coordinates, reverse_coords, i):
+    """
+    Returns the leftSpeed and rightSpeed to reverse until it reaches the required coords
+
+    Arguments: previous_coordinates, current_coordinates, desired_coordinates, i
+    Returns: leftSpeed, rightSpeed, i
+    """
+    MAX_SPEED = 6.28
+    coordinates_list = [previous_coordinates,current_coordinates,reverse_coords]
+    distance, x = getDistanceandRotation(coordinates_list)
+
+    if distance < 0.08: #stop once desired coordinate is nearby
+        leftSpeed  = 0
+        rightSpeed = 0
+        i += 1
+
+    else: #just reverse
+            leftSpeed  = -0.5 * MAX_SPEED
+            rightSpeed = -0.5 * MAX_SPEED
+
+    return leftSpeed, rightSpeed, i
+
+def calc_reverse_coords(current_coordinates, current_bearing):
+    """
+    Calculates the coordinates it needs to reverse to when wanting unload
+    Arguments: current_coordinates, current_bearing
+    Returns: reverse_coords
+    """
+    if current_bearing >= 180:
+        desired_bearing = current_bearing - 180
+    elif current_bearing < 180:
+        desired_bearing = current_bearing + 180
+    desired_bearing = desired_bearing * (3.14159265358929323846264/180)
+    reverse_coords = [0]*3
+    reverse_coords[0] = current_coordinates[0] + 0.4*np.cos(desired_bearing)
+    reverse_coords[2] = current_coordinates[2] + 0.4*np.sin(desired_bearing)
+
+    return reverse_coords
