@@ -338,8 +338,13 @@ while robot.step(TIME_STEP) != -1:
     ds_2_value = ds_right.getValue()
 
     #send gps coordinates to other robot
-    message_robot = [0, current_coordinates] # 0 - robot's coordinates, 1 - block coordinates
-    message_robot = struct.pack("4f", message_robot)
+    #message_robot = [0, *current_coordinates] # 0 - robot's coordinates, 1 - block coordinates
+    #message_robot = struct.pack("4f", *message_robot)
+    #sadly this doesnt work in python 2.7, which george cant stop his computer
+    #from using
+    message_robot = [0]
+    message_robot.extend(current_coordinates) # 0 - robot's coordinates, 1 - block coordinates
+    message_robot = struct.pack("4f", message_robot[0],message_robot[1],message_robot[2],message_robot[3])
     emitter.send(message_robot)
 
     #receive other robot's coordinates
@@ -389,7 +394,23 @@ while robot.step(TIME_STEP) != -1:
     else:
         pass
 
-    #check if robot has made a turn
+    #if theres a new point that you want to robot to go to that is not on the original path,
+    #insert in the i+2 location in the path
+    #example of left obstacle (just an example)
+    """
+    if current_bearing > 145 and current_bearing < 225: #facing south
+        if left_obstacle == True: # set new coordinte to have a reduced z coordinate
+            message = struct.pack("3f", *current_coordinates)
+            emitter.send(message)
+            print('sent', message)
+            new_coordinates = [current_coordinates[0], current_coordinates[2]-0.4]
+            path.insert(i+2,new_coordinates)
+            print('path edited')
+    """
+    # calculating distance between the desired coordinate and current coordinate
+    desired_coordinates = path[i+2]
+
+ #check if robot has made a turn
     coordinates = path[i]
     if coordinates in turnpoints:
         path_turns += 1
