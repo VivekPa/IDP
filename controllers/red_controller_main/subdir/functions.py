@@ -25,7 +25,7 @@ def bearing_round(bearing, base = 90):
     """
     Returns the bearing rounded to the nearest 90 degrees.
     """
-    rounded_bearing =  base * round(bearing / base)
+    rounded_bearing = base * round(bearing / base)
     return rounded_bearing
 
 def getDistanceandRotation(subpath):

@@ -73,7 +73,9 @@ block_coords = []
 #initialise block list
 other_colour_blocks = []
 #declare last cartesian bearing
-cartesian_bearing = []
+cartesian_bearing = 0
+#declare last known point
+last_known_point = []
 #declare turn variable to decide on path home
 path_turns = 0
 turnpoints = [[-1, 0, 0.6], [1, 0, 0.2]]
@@ -167,7 +169,7 @@ def find_block_coords(prelim_coords, bearing, ds):
     """
     #find out the cartesian direction of the robot.
     cartesian_bearing = bearing_round(bearing)
-    print(cartesian_bearing)
+    print(type(cartesian_bearing))
     #use diagonal distance from corner to centre of block
     block_diagonal = 0.03535533906
     #the corner detected will depend on the cartesian direction of the robot and
@@ -398,7 +400,9 @@ while robot.step(TIME_STEP) != -1:
                     leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)
                     if j == i+1: #collected block
                         obstacle = False
-                        path.insert(i+2, [last_known_point_x, last_known_point_y, last_known_point_z])
+                        print(type(last_known_point[0]))
+                        print(type(cartesian_bearing))
+                        path.insert(i+2, [last_known_point[0] + 0.1 * np.cos(cartesian_bearing * deg2rad), last_known_point[1], last_known_point[2] + 0.1 * np.sin(cartesian_bearing * deg2rad)])
                         if path_turns == 0:
                             path.insert(i+3, home)
                         else:
