@@ -49,9 +49,9 @@ camera_right.enable(TIME_STEP)
 """ Define Waypoints and Home """
 red_base = [1,0,1]
 blue_base = [1,0,-1]
-home = blue_base
-other_robot_coordinates = red_base
-path = [home,home,[1,0,-0.2],[0,0,-0.2],[-1,0,-0.2],[-1,0,-0.6],[0,0,-0.6],[0.6,0,-0.6],[0.6,0,-1],[0,0,-1],[-1,0,-1]] # always duplicate first point
+home = red_base
+other_robot_coordinates = blue_base
+path = [home,home,[0,0,1],[-1,0,1],[-1,0,0.6],[0,0,0.6],[1,0,0.6],[1,0,0.2],[0,0,0.2],[-1,0,0.2]] # always duplicate first point
 #path = [[1,1], [1,1],[0,1],[1,1],[-1,0],[0,0],[-1,-1],[0,0]] # always duplicate first point
 atHome      = True               # Home region
 
@@ -63,10 +63,22 @@ goinghome = False
 i = 0                            # Path index
 
 previous_coordinates = path[0]
-robot_colour = 2                 # 0 - red, 1 - green, 2- blue
-other_robot_colour = 0
+robot_colour = 0                 # 0 - red, 1 - green, 2- blue
+other_robot_colour = 2
 
 deg2rad = 3.14159/180
+
+#initialise 'active block coordinates'
+block_coords = []
+#initialise block list
+other_colour_blocks = []
+#declare last cartesian bearing
+cartesian_bearing = 0
+#declare last known point
+last_known_point = []
+#declare turn variable to decide on path home
+path_turns = 0
+turnpoints = [[-1, 0, 0.6], [1, 0, 0.2]]
 
 """
 This section of the code details the functions for detecting an object by 'sweeping'
@@ -157,6 +169,7 @@ def find_block_coords(prelim_coords, bearing, ds):
     """
     #find out the cartesian direction of the robot.
     cartesian_bearing = bearing_round(bearing)
+    print(type(cartesian_bearing))
     #use diagonal distance from corner to centre of block
     block_diagonal = 0.03535533906
     #the corner detected will depend on the cartesian direction of the robot and
@@ -191,77 +204,27 @@ def obstacle_check(ds,obstacle):
     #check if the object is a wall, by comparing with the lines x = 1.2/-1.2,
     #z = 1.2/-1.2
     wall_coord = 1.2
-    wall_tolerance = 0.01
-    lower_wall = wall_coord - wall_tolerance
-    upper_wall = wall_coord + wall_tolerance
+    obstacle_tolerance = 0.01
+    lower_wall = wall_coord - obstacle_tolerance
+    upper_wall = wall_coord + obstacle_tolerance
     if lower_wall <= abs(x_prelim) <= upper_wall or lower_wall <= abs(z_prelim) <= upper_wall:
-        # print('all okay! Just a wall')
+        print('All okay! Just a wall')
         obstacle = False
         block_coords = None
         pass
     else:
-        # print('thats no moon!')
+        #check if the object has already been recorded
         obstacle = True
-        block_coords = find_block_coords(prelim_coords, getBearing(compass.getValues()), ds)
-    
+        for coords in other_colour_blocks:
+            if (coords[0] - 2.5 - obstacle_tolerance) <= x_coords <= (coords[0] + 2.5 + obstacle_tolerance) and (coords[2] - 2.5 - obstacle_tolerance) <= (coords[2] + 2.5 + obstacle_tolerance):
+                print('Deja vu!')
+                obstacle = False
+
+        # print('thats no moon!')
+        if obstacle == True:
+            block_coords = find_block_coords(prelim_coords, getBearing(compass.getValues()), ds)
+
     return block_coords, obstacle
-"""
-def reciprocating_sweep(ds):
-"""
-    #A function which the robot uses to find the edge of a detected block. It returns the coordinates of the block.
-
-    #Arguments: ds (a string which denotes the distance sensor which detected an obstacle)
-"""
-    #Retrieve attributes
-    ds_attributes = get_attributes(ds)
-    ds_distance = ds_attributes[0]
-    ds_absolute_angle = getBearing(compass.getValues()) + ds_attributes[1]
-    ds_absolute_disp_angle = getBearing(compass.getValues()) + ds_attributes[2]
-    #move back 80mm
-    #find coordinates 80mm behind
-    back_coords = [(gps.getValues()[0] - 0.08 * np.sin(getBearing(compass.getValues()))), (gps.getValues()[2] - 0.08 * np.cos(getBearing(compass.getValues())))]
-    moveto(get_gps_xz(gps.getValues()), get_gps_xz(gps.getValues()), back_coords(), getBearing(), i)
-    #move forwards 80mm, 5mm at a time
-    for d in range(0, 0.08, 0.005):
-        #find coordinates of point on line sensor
-        x_coord = ds_read(ds) * np.sin(ds_absolute_angle) + ds_distance * np.sin(ds_absolute_disp_angle) + get_gps_xz(gps.getValues())[0]
-        z_coord = ds_read(ds) * np.cos(ds_absolute_angle) + ds_distance * np.cos(ds_absolute_disp_angle) + get_gps_xz(gps.getValues())[1]
-        measured_coords = [x_coord, z_coord]
-        measured_distance = ds_read(ds)
-        #do not check the first time as nothing to compare
-        if d > 0:
-            #check if a jump occurs in the sensor readings, which indicates the edge
-            if measured_distance < prev_distance - 0.01:
-                block_coords = measured_coords
-                break
-            else:
-                pass
-        else:
-            pass
-        prev_coords = measured_coords
-        prev_distance = measured_distance
-    if block_coords != [0, 0]: #any impossible coords will do here
-        #route to just in front of block to check colour
-        x_check_coord = block_coords[0] - 0.1 * np.sin(getBearing(compass.getValues()))
-        z_check_coord = block_coords[1] - 0.1 * np.cos(getBearing(compass.getValues()))
-        check_coords = [x_check_coord, z_check_coord]
-        moveto(get_gps_xz(), get_gps_xz(), block_coords(), getBearing(compass.getValues()), i)
-        #check block colour
-
-    else:
-        pass
-    block_coords = [0, 0]
-"""
-
-def go_to_block(block_coords):
-    """
-    This function give the desired coords to a position 5cm behind a block when
-    found in order to determine its colour. Empty for now.
-
-    Arguments: block_coords (an array of the block coordinates found in
-    obstacle_check)
-    """
-
 
 def stop():
     """
@@ -298,6 +261,12 @@ def getRGB():
         1: green
         2: blue
     """
+
+
+    #red   = RGB[0]
+    #green = RGB[1]
+    #blue  = RGB[2]
+
     image_left = camera_left.getImageArray()
     image_right = camera_right.getImageArray()
     RGB_left = image_left[0][0]
@@ -308,8 +277,6 @@ def getRGB():
     colour_right = RGB_right.index(max(RGB_right))
     if colour_left == colour_right:
         colour = colour_left
-        if colour == 1:
-            print('error! both green')
     elif colour_left != 1 and colour_right != 1:
         print('error! one red one blue')
         colour = None
@@ -319,11 +286,6 @@ def getRGB():
         else:
             colour = colour_left
 
-
-    # red   = RGB[0]
-    # green = RGB[1]
-    # blue  = RGB[2]
-
     return colour  #, red, green, blue
 
 
@@ -331,19 +293,22 @@ def getRGB():
 while robot.step(TIME_STEP) != -1:
     if i == len(path)-2:
         print('reached the end')
-    
+
     # get current device values
-    current_coordinates = gps.getValues()
+    current_coordinates = np.array(gps.getValues())
     north = compass.getValues()
     current_bearing = getBearing(north)
     ds_1_value = ds_left.getValue()
     ds_2_value = ds_right.getValue()
 
     #send gps coordinates to other robot
-    message_robot = [0, current_coordinates] # 0 - robot's coordinates, 1 - block coordinates 
-#     message_robot = [0, *current_coordinates] # 0 - robot's coordinates, 1 - block coordinates 
-#     message_robot = struct.pack("4f", *message_robot)
-    message_robot = struct.pack("4f", message_robot)
+    #message_robot = [0, *current_coordinates] # 0 - robot's coordinates, 1 - block coordinates
+    #message_robot = struct.pack("4f", *message_robot)
+    #sadly this doesnt work in python 2.7, which george cant stop his computer
+    #from using
+    message_robot = [0]
+    message_robot.extend(current_coordinates) # 0 - robot's coordinates, 1 - block coordinates
+    message_robot = struct.pack("4f", message_robot[0],message_robot[1],message_robot[2],message_robot[3])
     emitter.send(message_robot)
 
     #receive other robot's coordinates
@@ -355,8 +320,8 @@ while robot.step(TIME_STEP) != -1:
             other_robot_coordinates = message[1:]
         elif message[0] == 1:
             list_of_blocks.append(message[1:])
-        
-        print('Red robot location:', message)
+
+        print('Blue robot location:', message)
         receiver.nextPacket() #deletes the head packet
     # Process sensor data here.
     else:
@@ -373,7 +338,7 @@ while robot.step(TIME_STEP) != -1:
         atHome = True
     else:
         atHome = False
-    
+
     """ Unloading """
     if atHome and robot.getTime() > 8:  # If the robot is near home after 'return_to_home()'
         unloading = True                # Initiate unloading procedure
@@ -384,10 +349,13 @@ while robot.step(TIME_STEP) != -1:
     if obstacle == False and unloading == False:
         if right_obstacle == True:
             block_coords, obstacle = obstacle_check('ds_1', obstacle)
+            last_known_point = gps.getValues()
         else:
             pass
         if left_obstacle == True:
             block_coords, obstacle = obstacle_check('ds_2', obstacle)
+            last_known_point = gps.getValues()
+            print(last_known_point)
         else:
             pass
     else:
@@ -408,8 +376,16 @@ while robot.step(TIME_STEP) != -1:
     """
     # calculating distance between the desired coordinate and current coordinate
     desired_coordinates = path[i+2]
+
+ #check if robot has made a turn
+    coordinates = path[i]
+    if coordinates in turnpoints:
+        path_turns += 1
+        path.pop(0)
+        print('turned')
+
     MAX_SPEED = 6.28
-    
+
     if unloading == False:
         #obstacle Boolean here might be different from the obstacle boolean at the start of this loop due to the previous if statement
         if obstacle == True and goinghome == False:
@@ -424,16 +400,21 @@ while robot.step(TIME_STEP) != -1:
                     leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)
                     if j == i+1: #collected block
                         obstacle = False
-                        goinghome = True
-                        path.insert(i+2,home)
+                        print(type(last_known_point[0]))
+                        print(type(cartesian_bearing))
+                        path.insert(i+2, [last_known_point[0] + 0.1 * np.cos(cartesian_bearing * deg2rad), last_known_point[1], last_known_point[2] + 0.1 * np.sin(cartesian_bearing * deg2rad)])
+                        if path_turns == 0:
+                            path.insert(i+3, home)
+                        else:
+                            path.insert(i+3, [last_known_point[0], 0, 1])
+                            path.insert(i+4, home)
                 elif colour == other_robot_colour: #implement avoidance function
                     print('nah screw you')
                 elif colour == None:
                     print('cant determine')
-                #elif colour == 1: 
                 # leftSpeed  = 0
                 # rightSpeed = 0
-                
+
                 #obstacle = False #change obstacle back to False after collecting the block
                 #print(obstacle)
                 # leftMotor.setVelocity(leftSpeed)
@@ -444,6 +425,7 @@ while robot.step(TIME_STEP) != -1:
         #     print('trying to avoid')
         #     #implement avoidance function
         else:
+            print(desired_coordinates)
             leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i)
     elif unloading == True:
         leftSpeed, rightSpeed, j = reverseTo(previous_coordinates, current_coordinates, reverse_coords, i)
