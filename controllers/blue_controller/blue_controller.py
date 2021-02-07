@@ -340,7 +340,7 @@ while robot.step(TIME_STEP) != -1:
     ds_2_value = ds_right.getValue()
 
     #send gps coordinates to other robot
-    message_robot = [0, *current_coordinates] # 0 - robot's coordinates, 1 - block coordinates 
+    message_robot = [0, current_coordinates] # 0 - robot's coordinates, 1 - block coordinates 
     message_robot = struct.pack("4f", *message_robot)
     emitter.send(message_robot)
 

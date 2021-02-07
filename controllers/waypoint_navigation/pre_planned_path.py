@@ -1,12 +1,15 @@
-from controller import Robot, Motor, DistanceSensor, GPS, Emitter, Receiver, Camera
-import math
 import numpy as np
+import math
 import struct
+
+from controller import Robot, Motor, DistanceSensor, GPS, Emitter, Receiver, Camera
 
 from utils.variables import *
 from utils.obstacle_detection import *
 from utils.sensors_api import *
 from utils.motion_api import *
+
+from state import *
 
 """Initialise robot"""
 #region
