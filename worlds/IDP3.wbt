@@ -406,7 +406,7 @@ Robot {
   boundingObject USE BODY
   physics Physics {
   }
-  controller "blue_controller"
+  controller ""
 }
 Robot {
   translation 1 0.05 1
@@ -616,5 +616,5 @@ Robot {
   boundingObject USE BODY
   physics Physics {
   }
-  controller "red_controller_main"
+  controller "pre_planned_path"
 }
