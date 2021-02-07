@@ -151,12 +151,13 @@ while robot.step(TIME_STEP) != -1:
                     leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)
                     if j == i+1: #collected block
                         obstacle = False
+                        goinghome = True
                         # print(type(last_known_point[0]))
                         # print(type(cartesian_bearing))
                         # path.insert(i+2, [last_known_point[0] + 0.1 * np.cos(cartesian_bearing * deg2rad), last_known_point[1] + 0.1 * np.sin(cartesian_bearing * deg2rad)])
-                        print(i)
-                        print(path.size)
-                        print(last_known_point)
+                        # print(i)
+                        # print(path.size)
+                        # print(last_known_point)
                         path = np.insert(path, i+2, 
                                         [last_known_point[0] + 0.1 * np.cos(cartesian_bearing * deg2rad),
                                          last_known_point[1] + 0.1 * np.sin(cartesian_bearing * deg2rad)],
@@ -174,18 +175,18 @@ while robot.step(TIME_STEP) != -1:
                     print('nah screw you')
                 elif colour == None:
                     print('cant determine')
-                # leftSpeed  = 0
-                # rightSpeed = 0
+                    leftSpeed  = 0
+                    rightSpeed = 0
 
-                #obstacle = False #change obstacle back to False after collecting the block
+                # obstacle = False #change obstacle back to False after collecting the block
                 #print(obstacle)
                 # leftMotor.setVelocity(leftSpeed)
                 # rightMotor.setVelocity(rightSpeed)
                 # print('trying to break')
                 # break
         # elif obstacle == True and goinghome == True:
-        #     print('trying to avoid')
-        #     #implement avoidance function
+            # print('trying to avoid')
+            #implement avoidance function
         else:
             # print(desired_coordinates)
             # print(current_coordinates)
