@@ -1,5 +1,7 @@
 import math
 import numpy as np
+import struct
+from enum import Enum
 
 ds_value = 0
 
@@ -87,6 +89,29 @@ def getBearing(compass):
     return bearing
 
 def getCoordinates(gps):
-    xyz     = np.array(gps.getValues())
-    xz      = np.delete(xyz, 1, axis=0)
+    xyz     = np.array(gps.getValues())     # Get current position from GPS
+    xz      = np.delete(xyz, 1, axis=0)     # Remove y coordinate
     return xz
+
+# class EmitData(Enum):
+#     EGO     = 1
+#     BLOCK   = 2
+
+#     def __init__(self, coordinates):
+#         self.coordinates = coordinates
+
+def emitCoordinates(emitter, messagetype, coordinates):
+    '''Function that emits coordinate information
+    Arguments:
+    emitter:        emitter (sensor) object
+    gps:            gps (sensor) object
+    messagetype:    EGO     = 1
+                    BLOCK   = 2
+    '''
+    message_robot = np.array([messagetype])                         # Initialise message with messagetype
+    message_robot = np.append(message_robot, coordinates, axis=0)   # Append coordinates to message
+    message_robot = struct.pack("3f",   message_robot[0],           # Pack message type
+                                        message_robot[1],           # Pack x coordinate
+                                        message_robot[2])           # Pack z coordinate
+
+    emitter.send(message_robot)

@@ -8,7 +8,7 @@ orthographicViewHeight: 1
 textFiles: -1
 globalOptionalRendering: CameraFrustums::DistanceSensorRays::CoordinateSystem
 consoles: Console:All:All
-renderingDevicePerspectives: HungryHippo1:camera_left;1;111;0.87719;0.00398453
-renderingDevicePerspectives: HungryHippo1:camera_right;1;118;0.745047;0
+renderingDevicePerspectives: HungryHippo1:camera_left;1;116;0.756432;0
+renderingDevicePerspectives: HungryHippo1:camera_right;1;118;0.8634;0
 renderingDevicePerspectives: HungryHippo2:camera_left;1;90;0;0
 renderingDevicePerspectives: HungryHippo2:camera_right;1;91;0.0735895;0

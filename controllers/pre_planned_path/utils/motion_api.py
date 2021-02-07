@@ -1,7 +1,7 @@
 import math
 import numpy as np
 
-from variables import MAX_SPEED, deg2rad
+from .variables import MAX_SPEED, deg2rad
 
 def bearing_round(bearing, base = 90):
     """

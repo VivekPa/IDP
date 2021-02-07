@@ -1,4 +1,4 @@
-from statemachine import StateMachine, State
+from statemachine import State, StateMachine
 
 class MyRobotModel(object):
     def __init__(self, state):
@@ -17,7 +17,7 @@ class RobotMachine(StateMachine):
     AVOID_ROBOT     = State('Avoid_Robot')
 
     COLLECTION      = State('Collection')
-    RETURNHOME      = State('ReturnHome')
+    RETURN_HOME     = State('ReturnHome')
     UNLOAD          = State('Unload')
 
     PATH_FINISHED   = State('PathFinished')
@@ -41,23 +41,23 @@ class RobotMachine(StateMachine):
     avoided_robot   = AVOID_ROBOT.to(ONPATH)
 
     detected_gold   = ONPATH.to(COLLECTION)
-    collected       = COLLECTION.to(RETURNHOME)
-    hustle          = RETURNHOME.to(UNLOAD)
+    collected       = COLLECTION.to(RETURN_HOME)
+    hustle          = RETURN_HOME.to(UNLOAD)
     unloaded        = UNLOAD.to(ONPATH)
 
     no_path_left    = ONPATH.to(PATH_FINISHED)
     no_time_left    = ONPATH.to(TIME_FINISHED)
 
-    returnfrompath  = PATH_FINISHED.to(RETURNHOME)
-    returnfromtime  = TIME_FINISHED.to(RETURNHOME)
+    returnfrompath  = PATH_FINISHED.to(RETURN_HOME)
+    returnfromtime  = TIME_FINISHED.to(RETURN_HOME)
 
-    termination     = RETURNHOME.to(END)
+    termination     = RETURN_HOME.to(END)
     
     # endregion
 
     # Transition Messages
     # region
-    def on_starting(self):
+    def on_spawning(self):
         print("Setting on path")
     
     def on_detecting_wall(self):

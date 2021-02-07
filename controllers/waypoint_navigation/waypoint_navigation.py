@@ -12,10 +12,13 @@ from utils.motion_api import *
 from state import *
 
 """Initialise robot"""
-#region
-robot = Robot()
+robot = Robot()                                                 # Instantiate Webot Robot
+robotMachine = RobotMachine()                                   # Instantiate State Machine
+robotMachine.on_spawning()                                      # Print spawn transition
+
 TIME_STEP = int(robot.getBasicTimeStep())
 
+# region
 leftMotor = robot.getDevice('wheel1')
 rightMotor = robot.getDevice('wheel2')
 leftMotor.setPosition(float('inf'))
@@ -44,35 +47,20 @@ camera_right.enable(TIME_STEP)
 """"""
 
 while robot.step(TIME_STEP) != -1:
+    
     if i == len(path)-2:
-        print('reached the end')
+        robotMachine.on_path_finishing()
 
-    # get current device values
-    current_coordinates = getCoordinates(gps)
-    current_bearing = getBearing(compass)
-    ds_1_value = ds_left.getValue()
-    ds_2_value = ds_right.getValue()
+    current_coordinates = getCoordinates(gps)                   # Get current position
+    current_bearing = getBearing(compass)                       # Get current bearing
+    ds_1_value = ds_left.getValue()                             # Get left distance sensor measurement
+    ds_2_value = ds_right.getValue()                            # Get right distance sensor measurement
 
-    #region
-    #send gps coordinates to other robot
-    #message_robot = [0, *current_coordinates] # 0 - robot's coordinates, 1 - block coordinates
-    #message_robot = struct.pack("4f", *message_robot)
-    #sadly this doesnt work in python 2.7, which george cant stop his computer
-    #from using
-    #endregion
-    
-    #message_robot = [0, *current_coordinates] # 0 - robot's coordinates, 1 - block coordinates
-    
-    message_robot = [0]                                         # Select message type as robot coordinates
-    message_robot.extend(current_coordinates)                   # Send coordinates
-    message_robot = struct.pack("3f",   message_robot[0],       # Pack message type
-                                        message_robot[1],       # Pack x coordinate
-                                        message_robot[2])       # Pack z coordinate
-
-    emitter.send(message_robot)
+    # messagetype = EmitData.EGO
+    messagetype = 0                                             # Send Ego vehicle coordinates
+    emitCoordinates(emitter, messagetype, current_coordinates)
 
     #receive other robot's coordinates
-    #print('Receiver Queue length:'  , receiver.getQueueLength())
     if receiver.getQueueLength() > 0:
         message = receiver.getData()
         message = list(struct.unpack("3f",message))

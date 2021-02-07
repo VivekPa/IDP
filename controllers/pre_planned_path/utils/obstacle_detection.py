@@ -1,9 +1,10 @@
 import numpy as np
 import math
 
-from sensors_api import getCoordinates, getBearing, getRGB, get_attributes, ds_read
-from motion_api import bearing_round
-from variables import deg2rad, block_width, wall_list_x, other_colour_blocks
+# import sensors_api# import getCoordinates, getBearing, getRGB, get_attributes, ds_read
+from .sensors_api import *
+from .motion_api import bearing_round
+from .variables import deg2rad, block_width, wall_list_x, other_colour_blocks
 
 def find_obstacle_coords(ds, gps, compass):
     """

@@ -18,8 +18,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.21347202132891674 -0.9261855638644397 -0.3108214879940838 2.116638600374945
-  position -2.1139763274336922 2.3459359286648924 -0.2517854026063004
+  orientation -0.242462717583757 -0.8879650288103115 -0.3908067785898834 2.2213372849021167
+  position -2.475857452078617 3.223970547643123 -1.6778184932012488
 }
 TexturedBackground {
 }
@@ -576,16 +576,10 @@ Robot {
             USE DS
           ]
           name "camera_left"
-          recognitionColors [
-            1 0 0
-          ]
-          fieldOfView 0.1
-          width 100
-          height 100
+          fieldOfView 0.7
+          width 1
+          height 1
           far 0.1
-          recognition Recognition {
-            maxRange 0.1
-          }
         }
         Camera {
           translation -0.05 -0.015 0
@@ -594,16 +588,10 @@ Robot {
             USE DS
           ]
           name "camera_right"
-          recognitionColors [
-            1 0 0
-          ]
-          fieldOfView 0.1
+          fieldOfView 0.7
           width 1
           height 1
           far 0.1
-          recognition Recognition {
-            maxRange 0.1
-          }
         }
         Emitter {
           translation -0.075 -0.015 0
@@ -625,5 +613,5 @@ Robot {
   boundingObject USE BODY
   physics Physics {
   }
-  controller "pre_planned_path"
+  controller "waypoint_navigation"
 }
