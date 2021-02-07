@@ -23,7 +23,7 @@ def find_obstacle_coords(ds, gps, compass):
     # print(ds_distance)
     #retrieve gps and bearing
     coordinates = getCoordinates(gps)
-    bearing = getBearing(compass.getValues())
+    bearing = getBearing(compass)
     #find absolute angle of detector. remember to convert to radians!
     ds_absolute_angle = (bearing + ds_attributes[1]) * (deg2rad)
     ds_absolute_disp_angle = (bearing + ds_attributes[2]) * (deg2rad)
@@ -101,6 +101,6 @@ def obstacle_check(ds, gps, compass, obstacle, other_colour_blocks):
 
         # print('thats no moon!')
         if obstacle == True:
-            block_coords = find_block_coords(prelim_coords, getBearing(compass.getValues()), ds)
+            block_coords = find_block_coords(prelim_coords, getBearing(compass), ds)
 
     return block_coords, obstacle

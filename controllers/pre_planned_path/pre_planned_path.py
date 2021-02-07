@@ -1,8 +1,7 @@
 from controller import Robot, Motor, DistanceSensor, GPS, Emitter, Receiver, Camera
 import math
-import struct
 import numpy as np
-import csv
+import struct
 
 from utils.variables import *
 from utils.obstacle_detection import *
@@ -45,8 +44,7 @@ while robot.step(TIME_STEP) != -1:
 
     # get current device values
     current_coordinates = getCoordinates(gps)
-    north = compass.getValues()
-    current_bearing = getBearing(north)
+    current_bearing = getBearing(compass)
     ds_1_value = ds_left.getValue()
     ds_2_value = ds_right.getValue()
 
@@ -97,6 +95,7 @@ while robot.step(TIME_STEP) != -1:
         atHome = False
 
     """ Unloading """
+    #region
     if atHome and robot.getTime() > 8:  # If the robot is near home after 'return_to_home()'
         unloading = True                # Initiate unloading procedure
         reverse_coords = calc_reverse_coords(current_coordinates, current_bearing)
@@ -119,6 +118,8 @@ while robot.step(TIME_STEP) != -1:
             pass
     else:
         pass
+
+    #endregion
 
     #if theres a new point that you want to robot to go to that is not on the original path,
     #insert in the i+2 location in the path

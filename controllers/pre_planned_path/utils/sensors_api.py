@@ -74,10 +74,11 @@ def getRGB(camera_left, camera_right):
 
     return colour  #, red, green, blue
 
-def getBearing(compassData):
+def getBearing(compass):
     """
     Returns the bearing based off the compass north reading
     """
+    compassData = compass.getValues()
     rad = math.atan2(compassData[0], compassData[2])
     bearing = (rad - math.pi/2)/math.pi * 180
     if bearing < 0.0:
