@@ -18,8 +18,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.2729275429494426 -0.8770761745933064 -0.3952821021249911 2.138224547174924
-  position -2.469634786340378 3.292170593317912 -1.2667581367210166
+  orientation -0.4213077258819958 -0.813687032094029 -0.40051618433485503 1.8094792628150054
+  position -2.6448490656334225 3.5416469513080058 -0.14936429427261355
 }
 TexturedBackground {
 }
@@ -31,7 +31,7 @@ Floor {
   }
 }
 DEF Block_R1 Solid {
-  translation 0.93579 0.05 0.657746
+  translation 0.928279 0.05 0.505726
   children [
     DEF BOX_R Shape {
       appearance PBRAppearance {
@@ -84,7 +84,7 @@ DEF Block_R4 Solid {
   ]
 }
 DEF Block_B1 Solid {
-  translation 0.894424 0.05 -1.12892
+  translation -0.442166 0.05 -0.38935
   children [
     DEF BOX_B Shape {
       appearance PBRAppearance {
@@ -102,7 +102,7 @@ DEF Block_B1 Solid {
   }
 }
 DEF Block_B2 Solid {
-  translation 1.08982 0.05 -1.13421
+  translation 0.222311 0.05 -0.100557
   children [
     USE BOX_B
   ]
@@ -112,7 +112,7 @@ DEF Block_B2 Solid {
   }
 }
 DEF Block_B3 Solid {
-  translation 0.823723 0.05 -1.1468
+  translation -0.63097 0.05 -0.853537
   children [
     USE BOX_B
   ]
@@ -122,7 +122,7 @@ DEF Block_B3 Solid {
   }
 }
 DEF Block_B4 Solid {
-  translation 0.971046 0.05 -1.14368
+  translation 0.872051 0.05 -0.446503
   children [
     USE BOX_B
   ]
@@ -409,7 +409,7 @@ Robot {
   boundingObject USE BODY
   physics Physics {
   }
-  controller ""
+  controller "blue_controller"
 }
 Robot {
   translation 1 0.05 1
@@ -613,5 +613,5 @@ Robot {
   boundingObject USE BODY
   physics Physics {
   }
-  controller "waypoint_navigation"
+  controller "pre_planned_path"
 }
