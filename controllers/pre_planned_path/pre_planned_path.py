@@ -82,7 +82,7 @@ while robot.step(TIME_STEP) != -1:
         elif message[0] == 1:
             np.append(list_of_blocks, message[1:])
 
-        print('Blue robot location:', message)
+        print('Blue robot location:', other_robot_coordinates)
         receiver.nextPacket() #deletes the head packet
     
     # if receiver.getQueueLength() == 0:
@@ -129,11 +129,14 @@ while robot.step(TIME_STEP) != -1:
         desired_coordinates = path[i+2]
 
         #check if robot has made a turn
-        # coordinates = path[i]
-        # if coordinates in turnpoints:
-        #     path_turns += 1
-        #     path = np.delete(path,-1, axis=0)
-        #     print('turned')
+        coordinates = path[i+1]
+        print(path_turns, coordinates)
+        if coordinates[0] == turnpoints[0][0] and coordinates[1] == turnpoints[0][1]:
+            path_turns += 1
+            print(coordinates,turnpoints)
+            turnpoints = np.delete(turnpoints,0, axis=0)
+            print(turnpoints)
+            print('turned')
 
         if unloading == False:
             #obstacle Boolean here might be different from the obstacle boolean at the start of this loop due to the previous if statement

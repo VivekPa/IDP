@@ -67,5 +67,5 @@ cartesian_bearing = 0
 last_known_point = np.array([])
 #declare turn variable to decide on path home
 path_turns = 0
-turnpoints = np.array([[-1, 0, 0.6], [1, 0, 0.2]])
+turnpoints = np.array([[-1, 1.0], [-1, 0.6],[5,5]]) #have a dummy at the end
 #endregion
