@@ -18,8 +18,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.4213077258819958 -0.813687032094029 -0.40051618433485503 1.8094792628150054
-  position -2.6448490656334225 3.5416469513080058 -0.14936429427261355
+  orientation -0.4081340287492805 -0.8208782582032086 -0.39948153873007464 1.8298514164375181
+  position -2.668242054148629 3.5094093110852125 -0.22779362517111512
 }
 TexturedBackground {
 }
@@ -61,7 +61,7 @@ DEF Block_R2 Solid {
   }
 }
 DEF Block_R3 Solid {
-  translation -0.0170489 0.05 0.158592
+  translation -0.761114 0.05 0.170839
   children [
     USE BOX_R
   ]
@@ -102,7 +102,7 @@ DEF Block_B1 Solid {
   }
 }
 DEF Block_B2 Solid {
-  translation 0.222311 0.05 -0.100557
+  translation 0.852137 0.05 -0.189671
   children [
     USE BOX_B
   ]

@@ -90,7 +90,7 @@ while robot.step(TIME_STEP) != -1:
     #     print('no message')
 
     distance_btw_robots = np.linalg.norm(np.array(current_coordinates) - np.array(other_robot_coordinates))
-    print(distance_btw_robots)
+    print('distance',distance_btw_robots)
 
     if distance_btw_robots > 2*0.2:
         # detect obstacles
@@ -178,7 +178,7 @@ while robot.step(TIME_STEP) != -1:
                         #send gps coordinates to other robot
                         if blockcoords_sent == False:
                             message_block = [1, *block_coords] # 0 - robot's coordinates, 1 - block coordinates 
-                            message_block = struct.pack("4f", *message_block)
+                            message_block = struct.pack("3f", *message_block)
                             emitter.send(message_block)
                             blockcoords_sent = True
                             # reset blockcoords_sent after avoiding obstacle
