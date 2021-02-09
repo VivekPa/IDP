@@ -25,8 +25,8 @@ filename = os.path.join(dirname, '../paths/horizontal_traverse.txt')
 with open(filename, 'r') as csvfile:
     csvreader = csv.reader(csvfile,  delimiter = ',')
     for row in csvreader:
-        for i in range(len(row)):
-            row[i] = float(row[i])
+        for j in range(len(row)):
+            row[j] = float(row[j])
         point = (np.array(row))
         path = np.vstack([path, point])
 #endregion

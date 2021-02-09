@@ -31,7 +31,7 @@ Floor {
   }
 }
 DEF Block_R1 Solid {
-  translation 0.928279 0.05 0.505726
+  translation -0.371689 0.05 0.521414
   children [
     DEF BOX_R Shape {
       appearance PBRAppearance {
@@ -49,13 +49,21 @@ DEF Block_R1 Solid {
   physics Physics {
   }
 }
-DEF Block_R2 Solid {
-  translation -0.397973 0.05 0.546188
+DEF Block_R1 Solid {
+  translation 0.820981 0.05 0.381958
   children [
-    USE BOX_R
+    DEF BOX_R Shape {
+      appearance PBRAppearance {
+        baseColor 1 0 0
+        metalness 0
+      }
+      geometry Box {
+        size 0.05 0.05 0.05
+      }
+    }
   ]
   name "solid(13)"
-  contactMaterial "block"
+  contactMaterial "box"
   boundingObject USE BOX_R
   physics Physics {
   }
@@ -84,7 +92,7 @@ DEF Block_R4 Solid {
   ]
 }
 DEF Block_B1 Solid {
-  translation -0.442166 0.05 -0.38935
+  translation 0.103406 0.05 -0.326156
   children [
     DEF BOX_B Shape {
       appearance PBRAppearance {
@@ -102,7 +110,7 @@ DEF Block_B1 Solid {
   }
 }
 DEF Block_B2 Solid {
-  translation 0.852137 0.05 -0.189671
+  translation -0.0843808 0.05 -0.937256
   children [
     USE BOX_B
   ]

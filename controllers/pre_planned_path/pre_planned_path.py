@@ -43,7 +43,8 @@ camera_right = robot.getDevice('camera_right')
 camera_right.enable(TIME_STEP)
 
 """"""
-i = 0
+print(i)
+print(path_turns)
 while robot.step(TIME_STEP) != -1:
     if i == len(path)-2:
         print('reached the end')
