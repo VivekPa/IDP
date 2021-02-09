@@ -1,71 +1,50 @@
 import math
 import numpy as np
 
-def getBearing(north):
-    """
-    Returns the bearing based off the compass north reading
-    """
-    rad = math.atan2(north[0],north[2])
-    bearing = (rad - 1.5708)/math.pi * 180
-    if bearing < 0.0:
-        bearing = bearing + 360.0
-    #print(bearing)
-    return bearing
-
-def get_gps_xz(gps):
-    """
-    Returns the gps coordinates with the y-coordinate removed, based off the
-    3d gps coordinates.
-    """
-    coords = gps
-    xz_coords = [gps[0], gps[2]]
-    return xz_coords
+from .variables import MAX_SPEED, deg2rad
 
 def bearing_round(bearing, base = 90):
     """
     Returns the bearing rounded to the nearest 90 degrees.
     """
-    rounded_bearing =  base * round(bearing / base)
+    rounded_bearing = base * round(bearing / base)
     return rounded_bearing
 
 def getDistanceandRotation(subpath):
     """
     Returns the distance between the next point and current point and rotation needed to align with the new direction.
 
-    Arguments: Accepts a nested list of length  3
+    Arguments: Accepts a ndarray of length  3
     [[prev point],[current point],[next point]]
     """
-    subpath = np.array(subpath)
+    # print(np.round(subpath[0]))
+    # print(np.round(subpath[1]))
+    # print(np.round(subpath[2]))
 
-    if subpath.shape[0] == 3:
-        prev_vector = subpath[1] - subpath[0]
-        new_vector = subpath[2] - subpath[1]
-        distance = np.linalg.norm(new_vector)
+    prev_vector = subpath[1] - subpath[0]
+    new_vector = subpath[2] - subpath[1]
+    distance = np.linalg.norm(new_vector)
 
-        unit_prev_vector = prev_vector / np.linalg.norm(prev_vector)
-        unit_new_vector = new_vector / np.linalg.norm(new_vector)
-        angle_prev_vec = np.arctan(unit_prev_vector[2]/unit_prev_vector[0])/math.pi * 180
-        if unit_new_vector[0] == 0: # to avoid divide by zero problems
-            if unit_new_vector[2] > 0:
-                angle_new_vec = -90
-            if unit_new_vector[2] < 0:
-                angle_new_vec = 90
-        else:
-            angle_new_vec = np.arctan(unit_new_vector[2]/unit_new_vector[0])/math.pi * 180
-
-        dot_product = np.dot(unit_prev_vector, unit_new_vector)
-        if dot_product < 0:
-            if angle_new_vec < 0:
-                angle_new_vec += 180
-            elif angle_new_vec > 0:
-                angle_new_vec -= 180
-        #angle = np.arccos(dot_product)
-        #print(angle_prev_vec)
-        #print(angle_new_vec)
-        angle = angle_new_vec - angle_prev_vec
-
+    unit_prev_vector = prev_vector / np.linalg.norm(prev_vector)
+    unit_new_vector = new_vector / np.linalg.norm(new_vector)
+    angle_prev_vec = np.arctan(unit_prev_vector[1]/unit_prev_vector[0])/math.pi * 180
+    
+    if unit_new_vector[0] == 0: # to avoid divide by zero problems
+        if unit_new_vector[1] > 0:
+            angle_new_vec = -90
+        if unit_new_vector[1] < 0:
+            angle_new_vec = 90
     else:
-        print('wrong size')
+        angle_new_vec = np.arctan(unit_new_vector[1]/unit_new_vector[0])/math.pi * 180
+
+    dot_product = np.dot(unit_prev_vector, unit_new_vector)
+    if dot_product < 0:
+        if angle_new_vec < 0:
+            angle_new_vec += 180
+        elif angle_new_vec > 0:
+            angle_new_vec -= 180
+    
+    angle = angle_new_vec - angle_prev_vec
 
     return distance, angle
 
@@ -77,14 +56,13 @@ def moveTo(previous_coordinates, current_coordinates, desired_coordinates, curre
     Returns: leftSpeed, rightSpeed, i
     """
     # MAX_SPEED = 6.28
-    MAX_SPEED = 10
     coordinates_list = [previous_coordinates,current_coordinates,desired_coordinates]
-    distance, x = getDistanceandRotation(coordinates_list)
+    distance = getDistanceandRotation(coordinates_list)[0]
 
     # calculating desired bearing to get to desired coordinate from current coordinate
-    ref_coordinates = [current_coordinates[0]+1, current_coordinates[1] , current_coordinates[2]] # to make previous vector always be [-1,0,0]
+    ref_coordinates = [current_coordinates[0]+1, current_coordinates[1]] # to make previous vector always be [-1,0]
     coordinates_list2 = [ref_coordinates,current_coordinates,desired_coordinates]
-    x,angle = getDistanceandRotation(coordinates_list2)
+    angle = getDistanceandRotation(coordinates_list2)[1]
     # print('angle',angle)
     desired_bearing = angle + 180
 
@@ -126,12 +104,10 @@ def rotateTo(previous_coordinates, current_coordinates, desired_coordinates, cur
     Arguments: previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i
     Returns: leftSpeed, rightSpeed, i
     """
-    MAX_SPEED = 6.28
-
     # calculating desired bearing to get to desired coordinate from current coordinate
-    ref_coordinates = [current_coordinates[0]+1, current_coordinates[1] , current_coordinates[2]] # to make previous vector always be [-1,0,0]
+    ref_coordinates = np.array([current_coordinates[0]+1, current_coordinates[1]]) # to make previous vector always be [-1,0,0]
     coordinates_list2 = [ref_coordinates,current_coordinates,desired_coordinates]
-    x,angle = getDistanceandRotation(coordinates_list2)
+    angle = getDistanceandRotation(coordinates_list2)[1]
     # print('angle',angle)
     desired_bearing = angle + 180
 
@@ -150,7 +126,7 @@ def rotateTo(previous_coordinates, current_coordinates, desired_coordinates, cur
         leftSpeed  = 0
         rightSpeed = 0
         alignment = True
-        print('aligned')
+        # print('aligned')
     elif bearing_error >= 0.5: #rotate right to reduce bearing error
         leftSpeed  = 0.5 * MAX_SPEED
         rightSpeed = -0.5 * MAX_SPEED
@@ -167,9 +143,8 @@ def reverseTo(previous_coordinates, current_coordinates, reverse_coords, i):
     Arguments: previous_coordinates, current_coordinates, desired_coordinates, i
     Returns: leftSpeed, rightSpeed, i
     """
-    MAX_SPEED = 6.28
-    coordinates_list = [previous_coordinates,current_coordinates,reverse_coords]
-    distance, x = getDistanceandRotation(coordinates_list)
+    coordinates_list = np.array([previous_coordinates, current_coordinates, reverse_coords])
+    distance = getDistanceandRotation(coordinates_list)[0]
 
     if distance < 0.08: #stop once desired coordinate is nearby
         leftSpeed  = 0
@@ -192,9 +167,33 @@ def calc_reverse_coords(current_coordinates, current_bearing):
         desired_bearing = current_bearing - 180
     elif current_bearing < 180:
         desired_bearing = current_bearing + 180
-    desired_bearing = desired_bearing * (3.14159265358929323846264/180)
-    reverse_coords = [0]*3
-    reverse_coords[0] = current_coordinates[0] + 0.4*np.cos(desired_bearing)
-    reverse_coords[2] = current_coordinates[2] + 0.4*np.sin(desired_bearing)
+    desired_bearing = desired_bearing * (deg2rad)
+    reverse_coords = np.array([ current_coordinates[0] + 0.4*np.cos(desired_bearing),
+                                current_coordinates[1] + 0.4*np.sin(desired_bearing)])
 
     return reverse_coords
+
+def stop(leftMotor, rightMotor):
+    
+    """
+    This function stops the robot.
+    """
+    leftMotor.setVelocity(0.0)
+    rightMotor.setVelocity(0.0)
+
+def return_to_home(path, i, home):
+    """
+    This function returns the robot to home.
+    """
+    path.insert(i+2,home)
+
+def unload():
+    """
+    This function allows the collected block to be unloaded by:
+        * Moving the robot back by __ distance
+        * rotate to next waypoint
+    """
+    leftSpeed  = -0.5 * MAX_SPEED
+    rightSpeed = -0.5 * MAX_SPEED
+
+    return leftSpeed, rightSpeed

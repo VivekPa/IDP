@@ -18,8 +18,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.2729275429494426 -0.8770761745933064 -0.3952821021249911 2.138224547174924
-  position -2.469634786340378 3.292170593317912 -1.2667581367210166
+  orientation -0.4081340287492805 -0.8208782582032086 -0.39948153873007464 1.8298514164375181
+  position -2.668242054148629 3.5094093110852125 -0.22779362517111512
 }
 TexturedBackground {
 }
@@ -31,7 +31,7 @@ Floor {
   }
 }
 DEF Block_R1 Solid {
-  translation 0.93579 0.05 0.657746
+  translation -0.371689 0.05 0.521414
   children [
     DEF BOX_R Shape {
       appearance PBRAppearance {
@@ -49,19 +49,27 @@ DEF Block_R1 Solid {
   physics Physics {
   }
 }
-DEF Block_R2 Solid {
-  translation -0.397973 0.05 0.546188
+DEF Block_R1 Solid {
+  translation 0.820981 0.05 0.381958
   children [
-    USE BOX_R
+    DEF BOX_R Shape {
+      appearance PBRAppearance {
+        baseColor 1 0 0
+        metalness 0
+      }
+      geometry Box {
+        size 0.05 0.05 0.05
+      }
+    }
   ]
   name "solid(13)"
-  contactMaterial "block"
+  contactMaterial "box"
   boundingObject USE BOX_R
   physics Physics {
   }
 }
 DEF Block_R3 Solid {
-  translation -0.0170489 0.05 0.158592
+  translation -0.761114 0.05 0.170839
   children [
     USE BOX_R
   ]
@@ -84,7 +92,7 @@ DEF Block_R4 Solid {
   ]
 }
 DEF Block_B1 Solid {
-  translation 0.894424 0.05 -1.12892
+  translation 0.103406 0.05 -0.326156
   children [
     DEF BOX_B Shape {
       appearance PBRAppearance {
@@ -102,7 +110,7 @@ DEF Block_B1 Solid {
   }
 }
 DEF Block_B2 Solid {
-  translation 1.08982 0.05 -1.13421
+  translation -0.0843808 0.05 -0.937256
   children [
     USE BOX_B
   ]
@@ -112,7 +120,7 @@ DEF Block_B2 Solid {
   }
 }
 DEF Block_B3 Solid {
-  translation 0.823723 0.05 -1.1468
+  translation -0.63097 0.05 -0.853537
   children [
     USE BOX_B
   ]
@@ -122,7 +130,7 @@ DEF Block_B3 Solid {
   }
 }
 DEF Block_B4 Solid {
-  translation 0.971046 0.05 -1.14368
+  translation 0.872051 0.05 -0.446503
   children [
     USE BOX_B
   ]
@@ -409,7 +417,7 @@ Robot {
   boundingObject USE BODY
   physics Physics {
   }
-  controller ""
+  controller "blue_controller"
 }
 Robot {
   translation 1 0.05 1
@@ -613,5 +621,5 @@ Robot {
   boundingObject USE BODY
   physics Physics {
   }
-  controller "waypoint_navigation"
+  controller "pre_planned_path"
 }
