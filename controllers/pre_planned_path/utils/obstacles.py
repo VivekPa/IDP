@@ -12,13 +12,15 @@ def avoid_obstacle(curr_coord, obs_coord):
     :type obs_size: float
     """
 
-    robot_size = [10, 10] #placeholder for actual size
-    obs_size = 10 #placeholder for actual size
+    robot_size = [0.2, 0.2] #placeholder for actual size
+    obs_size = 0.05 #placeholder for actual size
 
-    dist_to_obj = np.sqrt((curr_coord[0]-obs_coord[0])^2 + (curr_coord[1]-obs_coord[1])^2)
+    dist_to_obj = np.sqrt((curr_coord[0]-obs_coord[0])**2 + (curr_coord[1]-obs_coord[1])**2)
 
-    new1 = [curr_coord[0]+obs_size/2+robot_size[0], curr_coord[1]]
-    new2 = [new1[0], new1[1]+obs_size+2*dist_to_obj+robot_size[1]]
-    new3 = [curr_coord[0], new2[1]]
+    new1 = [curr_coord[1], curr_coord[0]+obs_size/2+robot_size[0]]
+    new2 = [new1[1]+obs_size+2*dist_to_obj+robot_size[1], new1[0]]
+    new3 = [new2[1], curr_coord[0]]
+
+    # print([new1, new2, new3])
 
     return [new1, new2, new3]

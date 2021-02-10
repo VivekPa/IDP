@@ -8,6 +8,7 @@ from utils.obstacle_detection import *
 from utils.sensors_api import *
 from utils.motion_api import *
 from utils.obstacle_detection import *
+from utils.obstacles import *
 
 """Initialise robot"""
 #region
@@ -183,8 +184,13 @@ while robot.step(TIME_STEP) != -1:
 
                 elif colour == other_robot_colour: #implement avoidance function
                     print('nah screw you')
-                    new_path_coords = obstacle.avoid_obstacle(current_coordinates, block_coords)
-                    path = np.insert(path, i+2, new_path_coords, axis=0)
+                    new_path_coords = avoid_obstacle(current_coordinates, block_coords)
+                    # print(new_path_coords)
+                    # print("1")
+                    # path = np.insert(path, i+2, new_path_coords, axis=0)
+                    for a in range(len(new_path_coords)):
+                        path = np.insert(path, i+a+2, new_path_coords[a], axis=0)
+
                 elif colour == None:
                     print('cant determine')
                     # leftSpeed  = 0

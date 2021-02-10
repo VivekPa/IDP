@@ -18,8 +18,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.2729275429494426 -0.8770761745933064 -0.3952821021249911 2.138224547174924
-  position -2.469634786340378 3.292170593317912 -1.2667581367210166
+  orientation -0.2872529938439805 -0.8567247661694434 -0.42837879564654296 2.1779810664734627
+  position -2.1895485364558884 3.544886395922117 -1.2176923874880348
 }
 TexturedBackground {
 }
@@ -50,7 +50,7 @@ DEF Block_R1 Solid {
   }
 }
 DEF Block_R2 Solid {
-  translation -0.397973 0.05 0.546188
+  translation 0.425539 0.05 -0.332141
   children [
     USE BOX_R
   ]
@@ -61,7 +61,7 @@ DEF Block_R2 Solid {
   }
 }
 DEF Block_R3 Solid {
-  translation -0.0170489 0.05 0.158592
+  translation 0.687938 0.05 -0.337474
   children [
     USE BOX_R
   ]
@@ -71,7 +71,7 @@ DEF Block_R3 Solid {
   }
 }
 DEF Block_R4 Solid {
-  translation 0.115882 0.05 1.0411
+  translation 0.9715 0.05 0.0776166
   children [
     USE BOX_R
   ]
@@ -112,7 +112,7 @@ DEF Block_B2 Solid {
   }
 }
 DEF Block_B3 Solid {
-  translation 0.823723 0.05 -1.1468
+  translation 0.041033 0.05 0.980858
   children [
     USE BOX_B
   ]
@@ -613,5 +613,5 @@ Robot {
   boundingObject USE BODY
   physics Physics {
   }
-  controller "waypoint_navigation"
+  controller "pre_planned_path"
 }
