@@ -68,3 +68,4 @@ last_known_point = np.array([])
 path_turns = 0
 turnpoints = np.array([[-1, 0, 0.6], [1, 0, 0.2]])
 #endregion
+avoid_init = False

@@ -182,7 +182,7 @@ while robot.step(TIME_STEP) != -1:
                             path = np.insert(path, i+3, [last_known_point[0], 1], axis=0)
                             path = np.insert(path, i+4, home, axis=0)
 
-                elif colour == other_robot_colour: #implement avoidance function
+                elif colour == other_robot_colour and not avoid_init: #implement avoidance function
                     print('nah screw you')
                     new_path_coords = avoid_obstacle(current_coordinates, block_coords)
                     # print(new_path_coords)
@@ -190,6 +190,17 @@ while robot.step(TIME_STEP) != -1:
                     # path = np.insert(path, i+2, new_path_coords, axis=0)
                     for a in range(len(new_path_coords)):
                         path = np.insert(path, i+a+2, new_path_coords[a], axis=0)
+
+                    print(new_path_coords)
+                    avoid_init = True
+                    n = 0
+
+                if avoid_init and n < 3:
+                    print('test')
+                    leftSpeed, rightSpeed, i = moveTo(current_coordinates, previous_coordinates, path[i+n+2], current_bearing, i)
+                    i += 1
+                    n += 1
+                    
 
                 elif colour == None:
                     print('cant determine')
