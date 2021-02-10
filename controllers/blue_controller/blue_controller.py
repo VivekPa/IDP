@@ -83,14 +83,14 @@ while robot.step(TIME_STEP) != -1:
         elif message[0] == 1:
             np.append(list_of_blocks, message[1:])
 
-        print('Red robot location:', message)
+        # print('Red robot location:', message)
         receiver.nextPacket() #deletes the head packet
     
     # if receiver.getQueueLength() == 0:
     #     print('no message')
 
     distance_btw_robots = np.linalg.norm(np.array(current_coordinates) - np.array(other_robot_coordinates))
-    print('distance',distance_btw_robots)
+    # print('distance',distance_btw_robots)
 
     if distance_btw_robots > 2*0.2:
         # detect obstacles
