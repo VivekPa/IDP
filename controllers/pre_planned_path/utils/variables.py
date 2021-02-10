@@ -30,7 +30,7 @@ with open(filename, 'r') as csvfile:
         point = (np.array(row))
         path = np.vstack([path, point])
 
-timeout = 240    # Simulation time in seconds when robot quits everything to go home
+timeout = 200    # Simulation time in seconds when robot quits everything to go home
 #endregion
 
 """State Variables"""
