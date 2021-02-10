@@ -28,7 +28,7 @@ def getDistanceandRotation(subpath):
     unit_prev_vector = prev_vector / np.linalg.norm(prev_vector)
     unit_new_vector = new_vector / np.linalg.norm(new_vector)
     angle_prev_vec = np.arctan(unit_prev_vector[1]/unit_prev_vector[0])/math.pi * 180
-    
+
     if unit_new_vector[0] == 0: # to avoid divide by zero problems
         if unit_new_vector[1] > 0:
             angle_new_vec = -90
@@ -43,7 +43,7 @@ def getDistanceandRotation(subpath):
             angle_new_vec += 180
         elif angle_new_vec > 0:
             angle_new_vec -= 180
-    
+
     angle = angle_new_vec - angle_prev_vec
 
     return distance, angle
@@ -174,7 +174,7 @@ def calc_reverse_coords(current_coordinates, current_bearing):
     return reverse_coords
 
 def stop(leftMotor, rightMotor):
-    
+
     """
     This function stops the robot.
     """
@@ -197,3 +197,44 @@ def unload():
     rightSpeed = -0.5 * MAX_SPEED
 
     return leftSpeed, rightSpeed
+
+def find_bearing(current_coords, desired_coords):
+    """
+    This function returns the bearing of the line between two given coordinates.
+    """
+    #find vector of travel
+    relative_vector = desired_coords - current_coords
+    acw_from_z = arctan2(relative_vector[2], relative_vector[0]) / deg2rad
+    bearing = 90 - acw_from_z
+    if bearing <= 360:
+        bearing += 360
+    return bearing
+
+def find_path(current_coords, desired_coords):
+    block_radius = (block_width / np.sqrt(2)) * 0.01
+    #define path step
+    path_step = 0.001
+    #find vector of travel
+    relative_vector = desired_coords - current_coords
+    #find total distance
+    d_total = np.linalg.norm(relative_vector)
+    #normalise to give a direction vector
+    direction_vector = relative_vector/d_total
+    #find length of iterations to make for the given step
+    d_iteration = path_step * np.floor(d_total / path_step)
+    #now iterate through lambda until collides with a block
+    for lambda in range(0, path_step, d_iteration):
+        #find the coordinates on the line at this lambda
+        path_coords = current_coords + lambda * direction_vector
+        #now check if it collides with any block
+        for block_coords in list_of_blocks:
+            current_block_vector = block_coords - path_coords
+            d_relative_block = np.linalg.norm(relative_block_vector)
+            #if it collides with a block, find the tangents to route around it
+            if d_relative_block < 0.12:
+                block_vector1 = block_coords - current_coords
+                d1_block = np.linalg.norm(block_vector1)
+                tangent_angle1 = np.arcsin(block_radius / d1_block)
+                tangent_point1 =
+
+    return 1
