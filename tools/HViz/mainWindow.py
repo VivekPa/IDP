@@ -9,7 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+from pyqtgraph import PlotWidget
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -306,4 +306,3 @@ class Ui_MainWindow(object):
         self.actioncharcoal.setText(_translate("MainWindow", "charcoal"))
         self.actionSmall.setText(_translate("MainWindow", "Small"))
         self.actionMedium.setText(_translate("MainWindow", "Medium"))
-from pyqtgraph import PlotWidget
