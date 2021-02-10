@@ -42,8 +42,11 @@ camera_left.enable(TIME_STEP)
 camera_right = robot.getDevice('camera_right')
 camera_right.enable(TIME_STEP)
 
+#endregion
+
 """"""
-i = 0
+# print(i)
+# print(path_turns)
 
 while robot.step(TIME_STEP) != -1:
     if i == len(path)-2:
@@ -55,16 +58,7 @@ while robot.step(TIME_STEP) != -1:
     ds_1_value = ds_left.getValue()
     ds_2_value = ds_right.getValue()
 
-    #region
-    #send gps coordinates to other robot
     #message_robot = [0, *current_coordinates] # 0 - robot's coordinates, 1 - block coordinates
-    #message_robot = struct.pack("4f", *message_robot)
-    #sadly this doesnt work in python 2.7, which george cant stop his computer
-    #from using
-    #endregion
-    
-    #message_robot = [0, *current_coordinates] # 0 - robot's coordinates, 1 - block coordinates
-    
     message_robot = [0]                                         # Select message type as robot coordinates
     message_robot.extend(current_coordinates)                   # Send coordinates
     message_robot = struct.pack("3f",   message_robot[0],       # Pack message type
@@ -73,6 +67,7 @@ while robot.step(TIME_STEP) != -1:
 
     emitter.send(message_robot)
 
+    #region
     #receive other robot's coordinates
     #print('Receiver Queue length:'  , receiver.getQueueLength())
     while receiver.getQueueLength() > 0:
@@ -83,31 +78,37 @@ while robot.step(TIME_STEP) != -1:
         elif message[0] == 1:
             np.append(list_of_blocks, message[1:])
 
-        # print('Red robot location:', message)
+        # print('Red robot location:', other_robot_coordinates)
         receiver.nextPacket() #deletes the head packet
     
     # if receiver.getQueueLength() == 0:
     #     print('no message')
+    #endregion
+
+
+    """Check if Home"""
+    # Check if the robot is near home
+    if np.linalg.norm(np.array(current_coordinates) - np.array(home)) < 0.1:
+        atHome = True
+    else:
+        atHome = False
+
+
+    """ Unloading """
+    #region
+    if atHome and robot.getTime() > 8:  # If the robot is near home after 'return_to_home()'
+        unloading = True                # Initiate unloading procedure
+        reverse_coords = calc_reverse_coords(current_coordinates, current_bearing)
+    #endregion
+
 
     distance_btw_robots = np.linalg.norm(np.array(current_coordinates) - np.array(other_robot_coordinates))
-    # print('distance',distance_btw_robots)
-
+    # print('distance', distance_btw_robots)
+    
     if distance_btw_robots > 2*0.2:
         # detect obstacles
         right_obstacle = ds_1_value < 1000.0
         left_obstacle = ds_2_value < 1000.0
-
-        # Check if the robot is near home
-        if np.linalg.norm(np.array(current_coordinates) - np.array(home)) < 0.1:
-            atHome = True
-        else:
-            atHome = False
-
-        """ Unloading """
-        #region
-        if atHome and robot.getTime() > 8:  # If the robot is near home after 'return_to_home()'
-            unloading = True                # Initiate unloading procedure
-            reverse_coords = calc_reverse_coords(current_coordinates, current_bearing)
 
         #call obstacle_check only if obstacle outside of while loop and unloading is false
         #potentially changes obstacle to True if it detects a block
@@ -126,17 +127,22 @@ while robot.step(TIME_STEP) != -1:
                 pass
         else:
             pass
-        
-        # calculating distance between the desired coordinate and current coordinate
-        desired_coordinates = path[i+2]
-        # print(i, desired_coordinates)
 
-    #check if robot has made a turn
-        # coordinates = path[i]
-        # if coordinates in turnpoints:
-        #     path_turns += 1
-        #     path = np.delete(path,-1, axis=0)
-        #     print('turned')
+        # calculating distance between the desired coordinate and current coordinate
+        if len(path) > i+2:
+            desired_coordinates = path[i+2]
+
+        #check if robot has made a turn
+        if len(path) > i+2:
+            coordinates = path[i+1]
+        
+        # print(path_turns, coordinates)
+        if coordinates[0] == turnpoints[0][0] and coordinates[1] == turnpoints[0][1]:
+            path_turns += 1
+            # print(coordinates,turnpoints)
+            turnpoints = np.delete(turnpoints,0, axis=0)
+            print(turnpoints)
+            print('turned')
 
         if unloading == False:
             #obstacle Boolean here might be different from the obstacle boolean at the start of this loop due to the previous if statement
@@ -154,6 +160,7 @@ while robot.step(TIME_STEP) != -1:
                             obstacle = False
                             goinghome = True
                             path = np.insert(path, i+2, home, axis=0)
+                            #region
                             # print(type(last_known_point[0]))
                             # print(type(cartesian_bearing))
                             # path.insert(i+2, [last_known_point[0] + 0.1 * np.cos(cartesian_bearing * deg2rad), last_known_point[1] + 0.1 * np.sin(cartesian_bearing * deg2rad)])
@@ -172,6 +179,7 @@ while robot.step(TIME_STEP) != -1:
                             #     # path.insert(i+4, home)
                             #     path = np.insert(path, i+3, [last_known_point[0], 1], axis=0)
                             #     path = np.insert(path, i+4, home, axis=0)
+                            #endregion
 
                     elif colour == other_robot_colour: #implement avoidance function
                         print('nah screw you')
@@ -196,6 +204,7 @@ while robot.step(TIME_STEP) != -1:
             # elif obstacle == True and goinghome == True:
             #     print('trying to avoid')
             #     #implement avoidance function
+            
             else:
                 # print(desired_coordinates)
                 # print(current_coordinates)
@@ -211,9 +220,34 @@ while robot.step(TIME_STEP) != -1:
                 obstacle = False
     else:
         print('too close')
-        leftSpeed = 0
-        rightSpeed = 0
+        leftSpeed = 0.0
+        rightSpeed = 0.0
+    
+    if robot.getTime() >= timeout:
+        print("Out-of-time !")
+        current_coordinates = getCoordinates(gps)
+        # previous_coordinates = current_coordinates
         
+        if robot.getTime() == timeout:
+            previous_coordinates = current_coordinates
+            path = np.array([previous_coordinates, current_coordinates, home])
+            i = 0
+            # path = np.append(path, [current_coordinates], axis=0)
+        
+        # rotateTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, alignment)
+
+        moveTo(previous_coordinates, current_coordinates, home, current_bearing, i)
+        # path = np.append(path, [home], axis=0)
+        unloading   = False
+        obstacle    = False
+        goinghome   = True
+        
+        if atHome:
+            print("atHome")
+            leftSpeed  = 0.0
+            rightSpeed = 0.0
+    
+    moveTo(previous_coordinates, current_coordinates, home, current_bearing, i)
     leftMotor.setVelocity(leftSpeed)
     rightMotor.setVelocity(rightSpeed)
     previous_coordinates = current_coordinates

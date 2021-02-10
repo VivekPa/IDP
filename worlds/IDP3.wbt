@@ -50,7 +50,7 @@ DEF Block_R1 Solid {
   }
 }
 DEF Block_R1 Solid {
-  translation 0.820981 0.05 0.381958
+  translation 0.55753 0.05 0.30648
   children [
     DEF BOX_R Shape {
       appearance PBRAppearance {
@@ -418,6 +418,9 @@ Robot {
   physics Physics {
   }
   controller "blue_controller"
+  controllerArgs [
+    ""
+  ]
 }
 Robot {
   translation 1 0.05 1
@@ -465,7 +468,7 @@ Robot {
           ]
           endPoint Solid {
             translation 0.015 -0.005 -0.04
-            rotation 0 1.962616573903276e-17 0.9999999999999999 1.5707953071884027
+            rotation 1.5700932591226285e-16 1.5700932591226285e-16 0.9999999999999999 1.5707953071883924
             children [
               DEF WHEEL Shape {
                 appearance PBRAppearance {
@@ -493,7 +496,7 @@ Robot {
           ]
           endPoint Solid {
             translation -0.165 -0.005 -0.04
-            rotation 1.9633974819787447e-17 0 1 1.57
+            rotation -1.9633974819787484e-16 -1.9633974819787484e-16 1 1.5699999999999963
             children [
               USE WHEEL
             ]

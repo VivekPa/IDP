@@ -25,10 +25,12 @@ filename = os.path.join(dirname, '../paths/horizontal_traverse.txt')
 with open(filename, 'r') as csvfile:
     csvreader = csv.reader(csvfile,  delimiter = ',')
     for row in csvreader:
-        for i in range(len(row)):
-            row[i] = float(row[i])
+        for j in range(len(row)):
+            row[j] = float(row[j])
         point = (np.array(row))
         path = np.vstack([path, point])
+
+timeout = 240    # Simulation time in seconds when robot quits everything to go home
 #endregion
 
 """State Variables"""
@@ -67,10 +69,12 @@ cartesian_bearing = 0
 last_known_point = np.array([])
 #declare turn variable to decide on path home
 path_turns = 0
-#turnpoints = np.array([[-1, 0, 0.6], [1, 0, 0.2]])
-turnpoints = np.array([])
-#endregion
+# turnpoints = np.array([[-1, 0, 0.6], [1, 0, 0.2], [5,5]]) #have a dummy at the end
+turnpoints = np.array([[-1, 0, 0.6], [1, 0, 0.2]]) #have a dummy at the end
+# turnpoints = np.array([])
 
+#endregion
+#
 # 1,-0.2
 # 0,-0.2
 # -1,-0.2
