@@ -45,7 +45,7 @@ camera_right.enable(TIME_STEP)
 """"""
 while robot.step(TIME_STEP) != -1:
     if i == len(path)-2:
-        print('B reached the end')
+        #print('B reached the end')
         i -= 1
     # get current device values
     current_coordinates = getCoordinates(gps)
@@ -79,7 +79,7 @@ while robot.step(TIME_STEP) != -1:
         if round(message[0]) == 0.0:
             other_robot_coordinates = message[1:]
         elif message[0] == 1.0 :
-            # path = np.append(path, np.array([message[1:]]), axis = 0)
+            #path = np.append(path, np.array([message[1:]]), axis = 0)
             list_of_blocks = np.append(list_of_blocks, np.array([message[1:]]), axis = 0)
 
         # print('Red robot location:', other_robot_coordinates)
@@ -240,11 +240,16 @@ while robot.step(TIME_STEP) != -1:
     else:
         print('B too close')
         # if path[i+2][0] != home[0] and path[i+2][1] != home[1]:
+        #     print('try going home first')
         #     path = np.insert(path, i+2, home, axis=0)
+        #     obstacle = False
+        #     goinghome = True
         # else:
         #     print('already going home')
-        leftSpeed = 0
-        rightSpeed = 0
+        # # leftSpeed = 0
+        # # rightSpeed = 0
+        # desired_coordinates = path[i+2]
+        # leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i)
 
     if robot.getTime() >= timeout:
         print("Out-of-time!")
@@ -254,18 +259,18 @@ while robot.step(TIME_STEP) != -1:
         if robot.getTime() == timeout:
             path = np.array([previous_coordinates, current_coordinates, home])
             i = 0
-            # obstacle = False
-            # goinghome = True
+            obstacle = False
+            goinghome = True
             # path = np.insert(path, i+2, home, axis=0)
             # path = np.append(path, [current_coordinates], axis=0)
         
         # rotateTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, alignment)
 
-        leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, home, current_bearing, i)
-        # path = np.append(path, [home], axis=0)
-        unloading   = False
-        obstacle    = False
-        goinghome   = True
+        # leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, home, current_bearing, i)
+        # # path = np.append(path, [home], axis=0)
+        # unloading   = False
+        # obstacle    = False
+        # goinghome   = True
         
         if atHome:
             print("R atHome, done for the day")

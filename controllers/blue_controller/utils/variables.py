@@ -30,7 +30,7 @@ with open(filename, 'r') as csvfile:
         point = (np.array(row))
         path = np.vstack([path, point])
 #endregion
-timeout = 200
+timeout = 270
 
 """State Variables"""
 #region

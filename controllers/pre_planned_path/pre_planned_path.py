@@ -45,7 +45,7 @@ camera_right.enable(TIME_STEP)
 """"""
 while robot.step(TIME_STEP) != -1:
     if i == len(path)-2:
-        print('reached the end')
+        #print('reached the end')
         i -= 1
 
     # get current device values
@@ -239,12 +239,18 @@ while robot.step(TIME_STEP) != -1:
         
     else:
         print('R too close')
-        leftSpeed = 0
-        rightSpeed = 0
-        # if path[i+2][0] != home[0] and path[i+2][1] != home[1]:
-        #     path = np.insert(path, i+2, home, axis=0)
-        # else:
-        #     print('already going home')
+        # leftSpeed = 0
+        # rightSpeed = 0
+        if path[i+2][0] != home[0] and path[i+2][1] != home[1]:
+            print('try going home')
+            path = np.insert(path, i+2, home, axis=0)
+            obstacle = False
+            goinghome = True
+        else:
+            print('already going home')
+
+        desired_coordinates = path[i+2]
+        leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i)
 
     if robot.getTime() >= timeout:
         print("Out-of-time!")
@@ -254,18 +260,18 @@ while robot.step(TIME_STEP) != -1:
         if robot.getTime() == timeout:
             path = np.array([previous_coordinates, current_coordinates, home])
             i = 0
-            # obstacle = False
-            # goinghome = True
+            obstacle = False
+            goinghome = True
             # path = np.insert(path, i+2, home, axis=0)
             # path = np.append(path, [current_coordinates], axis=0)
         
         # rotateTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, alignment)
 
-        leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, home, current_bearing, i)
-        # path = np.append(path, [home], axis=0)
-        unloading   = False
-        obstacle    = False
-        goinghome   = True
+        # leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, home, current_bearing, i)
+        # # path = np.append(path, [home], axis=0)
+        # unloading   = False
+        # obstacle    = False
+        # goinghome   = True
         
         if atHome:
             print("R atHome, done for the day")
