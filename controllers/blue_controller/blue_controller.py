@@ -152,7 +152,7 @@ while robot.step(TIME_STEP) != -1:
                 if alignment == True:
                     colour = getRGB(camera_left, camera_right)
                     alignment = False #switch alignment back to false
-                    print('B Colour', colour)
+                    print('B Colour (0 - Red, 1-Green, 2- Blue, None- 1 each):', colour)
                     if colour == robot_colour: #implement collection function
                         print('B correct colour, collect it')
                         leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)

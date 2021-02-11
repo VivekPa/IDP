@@ -18,8 +18,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.3811167120991663 -0.850615023223168 -0.36222111206522856 1.7736461161994757
-  position -3.5494094747923013 4.085932435255561 -0.16960645807064756
+  orientation -0.36180954140002225 -0.8678891112943147 -0.3403855846663757 1.7490602913747453
+  position -4.233958261480894 4.186169119912549 -0.11999782985434787
 }
 TexturedBackground {
 }
@@ -31,7 +31,7 @@ Floor {
   }
 }
 DEF Block_R1 Solid {
-  translation -0.394742 0.05 0.933749
+  translation -0.12105 0.05 0.373698
   children [
     DEF BOX_R Shape {
       appearance PBRAppearance {
@@ -49,8 +49,8 @@ DEF Block_R1 Solid {
   physics Physics {
   }
 }
-DEF Block_R1 Solid {
-  translation 0.55753 0.05 0.30648
+DEF Block_R2 Solid {
+  translation 0.979588 0.05 -0.425697
   children [
     DEF BOX_R Shape {
       appearance PBRAppearance {
@@ -63,13 +63,12 @@ DEF Block_R1 Solid {
     }
   ]
   name "solid(13)"
-  contactMaterial "box"
   boundingObject USE BOX_R
   physics Physics {
   }
 }
 DEF Block_R3 Solid {
-  translation -0.761114 0.05 0.170839
+  translation -1.12441 0.05 0.492405
   children [
     USE BOX_R
   ]
@@ -79,7 +78,7 @@ DEF Block_R3 Solid {
   }
 }
 DEF Block_R4 Solid {
-  translation 0.116702 0.05 -0.443751
+  translation -0.0170186 0.05 -0.92396
   children [
     USE BOX_R
   ]
@@ -92,7 +91,7 @@ DEF Block_R4 Solid {
   ]
 }
 DEF Block_B1 Solid {
-  translation 0.203353 0.05 0.924953
+  translation 0.115885 0.05 1.11116
   children [
     DEF BOX_B Shape {
       appearance PBRAppearance {
@@ -110,7 +109,7 @@ DEF Block_B1 Solid {
   }
 }
 DEF Block_B2 Solid {
-  translation -0.865716 0.05 0.871873
+  translation -0.134518 0.05 -0.06772
   children [
     USE BOX_B
   ]
@@ -120,7 +119,7 @@ DEF Block_B2 Solid {
   }
 }
 DEF Block_B3 Solid {
-  translation -0.63097 0.05 -0.853537
+  translation -1.04911 0.05 -0.902705
   children [
     USE BOX_B
   ]
@@ -130,7 +129,7 @@ DEF Block_B3 Solid {
   }
 }
 DEF Block_B4 Solid {
-  translation 0.872051 0.05 -0.446503
+  translation 0.84587 0.05 0.188649
   children [
     USE BOX_B
   ]
