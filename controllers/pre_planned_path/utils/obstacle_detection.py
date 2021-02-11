@@ -105,3 +105,67 @@ def obstacle_check(ds, gps, compass, obstacle, other_colour_blocks):
             block_coords = find_block_coords(prelim_coords, getBearing(compass), ds)
 
     return block_coords, obstacle
+
+def avoid_obstacle(current_coordinates, block_coords, current_bearing):
+    """
+    Provides code to move past blocks that are not of correct colour
+    """
+    robot_size = [0.3, 0.2] #placeholder for actual size
+    obs_size = 0.05 #placeholder for actual size
+    dist_to_obj = np.sqrt((current_coordinates[0]-block_coords[0])**2 + (current_coordinates[1]-block_coords[1])**2)
+    
+    direction = bearing_round(current_bearing) #makes it 0,90,180,270
+    if direction == 360:
+        direction = 0
+    
+    if direction == 0:
+        if current_coordinates[1] >= 0:
+            #new points in -z direction
+            new1 = [current_coordinates[0], current_coordinates[1]-(obs_size/2+robot_size[0])]
+            new2 = [ new1[0]+(obs_size+dist_to_obj+robot_size[1]),new1[1]]
+            new3 = [new2[0],current_coordinates[1]]
+        else:
+            #new points in z direction
+            new1 = [current_coordinates[0], current_coordinates[1]+(obs_size/2+robot_size[0])]
+            new2 = [ new1[0]+(obs_size+dist_to_obj+robot_size[1]),new1[1]]
+            new3 = [new2[0],current_coordinates[1]]
+
+    elif direction == 180:
+        if current_coordinates[1] >= 0:
+            #new points in -z direction
+            new1 = [current_coordinates[0], current_coordinates[1]-(obs_size/2+robot_size[0])]
+            new2 = [ new1[0]-(obs_size+dist_to_obj+robot_size[1]),new1[1]]
+            new3 = [new2[0],current_coordinates[1]]
+        else:
+            #new points in z direction
+            new1 = [current_coordinates[0], current_coordinates[1]+(obs_size/2+robot_size[0])]
+            new2 = [ new1[0]-(obs_size+dist_to_obj+robot_size[1]),new1[1]]
+            new3 = [new2[0],current_coordinates[1]]
+
+    elif direction == 90 :
+        if current_coordinates[0] >= 0:
+            #new points in the -x direction
+            new1 = [current_coordinates[0]-(obs_size/2+robot_size[0]), current_coordinates[1]]
+            new2 = [new1[0],new1[1]+(obs_size+dist_to_obj+robot_size[1])]
+            new3 = [current_coordinates[0], new2[1]]
+        else:
+            #new points in the x direction
+            new1 = [current_coordinates[0]+(obs_size/2+robot_size[0]), current_coordinates[1]]
+            new2 = [new1[0],new1[1]+(obs_size+dist_to_obj+robot_size[1])]
+            new3 = [current_coordinates[0], new2[1]]
+
+    elif direction == 270 :
+        if current_coordinates[0] >= 0:
+            #new points in the -x direction
+            new1 = [current_coordinates[0]-(obs_size/2+robot_size[0]), current_coordinates[1]]
+            new2 = [new1[0],new1[1]-(obs_size+dist_to_obj+robot_size[1])]
+            new3 = [current_coordinates[0], new2[1]]
+        else:
+            #new points in the x direction
+            new1 = [current_coordinates[0]+(obs_size/2+robot_size[0]), current_coordinates[1]]
+            new2 = [new1[0],new1[1]-(obs_size+dist_to_obj+robot_size[1])]
+            new3 = [current_coordinates[0], new2[1]]
+
+    bypass_points = np.array([new1,new2,new3])
+
+    return bypass_points

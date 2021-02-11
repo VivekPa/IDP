@@ -25,11 +25,12 @@ filename = os.path.join(dirname, '../paths/horizontal_traverse.txt')
 with open(filename, 'r') as csvfile:
     csvreader = csv.reader(csvfile,  delimiter = ',')
     for row in csvreader:
-        for i in range(len(row)):
-            row[i] = float(row[i])
+        for j in range(len(row)):
+            row[j] = float(row[j])
         point = (np.array(row))
         path = np.vstack([path, point])
 #endregion
+timeout = 200
 
 """State Variables"""
 #region
@@ -37,7 +38,9 @@ unloading   = False         # Unloading state
 obstacle    = False         # Obstacle detection state
 goinghome   = False         # Going Home state
 atHome      = True          # At Home state
+nearHome    = True
 blockcoords_sent = False
+obstacle_avoided = True
 
 #endregion
 
@@ -58,7 +61,7 @@ MAX_SPEED = 10
 """Obstacle variables"""
 #region
 #initialise 'active block coordinates'
-list_of_blocks = np.array([])
+list_of_blocks = path
 #initialise block list
 other_colour_blocks = np.array([])
 #declare last cartesian bearing
@@ -67,9 +70,9 @@ cartesian_bearing = 0
 last_known_point = np.array([])
 #declare turn variable to decide on path home
 path_turns = 0
-#turnpoints = np.array([[-1, 0, 0.6], [1, 0, 0.2]])
-turnpoints = np.array([])
+turnpoints = np.array([[5,5]]) #have a dummy at the end
 #endregion
+i_whennewptsadded = 0
 
 # 1,-0.2
 # 0,-0.2

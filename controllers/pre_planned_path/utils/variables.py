@@ -30,6 +30,7 @@ with open(filename, 'r') as csvfile:
         point = (np.array(row))
         path = np.vstack([path, point])
 #endregion
+timeout = 200
 
 """State Variables"""
 #region
@@ -37,7 +38,9 @@ unloading   = False         # Unloading state
 obstacle    = False         # Obstacle detection state
 goinghome   = False         # Going Home state
 atHome      = True          # At Home state
+nearHome    = True
 blockcoords_sent = False
+obstacle_avoided = True
 
 #endregion
 
@@ -69,3 +72,4 @@ last_known_point = np.array([])
 path_turns = 0
 turnpoints = np.array([[-1, 1.0], [-1, 0.6],[5,5]]) #have a dummy at the end
 #endregion
+i_whennewptsadded = 0
