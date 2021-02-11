@@ -141,8 +141,8 @@ while robot.step(TIME_STEP) != -1:
             path_turns += 1
             # print(coordinates,turnpoints)
             turnpoints = np.delete(turnpoints,0, axis=0)
-            print(turnpoints)
-            print('turned')
+            # print(turnpoints)
+            # print('turned')
 
         if unloading == False:
             #obstacle Boolean here might be different from the obstacle boolean at the start of this loop due to the previous if statement
@@ -152,9 +152,9 @@ while robot.step(TIME_STEP) != -1:
                 if alignment == True:
                     colour = getRGB(camera_left, camera_right)
                     alignment = False #switch alignment back to false
-                    print(colour)
+                    print('B Colour', colour)
                     if colour == robot_colour: #implement collection function
-                        print('yeboi collect it')
+                        print('B correct colour, collect it')
                         leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)
                         if j == i+1: #collected block
                             obstacle = False
@@ -181,17 +181,29 @@ while robot.step(TIME_STEP) != -1:
                             #     path = np.insert(path, i+4, home, axis=0)
                             #endregion
 
-                    elif colour == other_robot_colour: #implement avoidance function
-                        print('nah screw you')
-                        #send gps coordinates to other robot
-                        if blockcoords_sent == False:
-                            message_block = [1, *block_coords] # 0 - robot's coordinates, 1 - block coordinates 
-                            message_block = struct.pack("3f", *message_block)
-                            emitter.send(message_block)
-                            blockcoords_sent = True
-                            # reset blockcoords_sent after avoiding obstacle
+                    elif colour == other_robot_colour or colour == 1: #implement avoidance function
+                        print('B wrong colour, but still collect it')
+                        leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)
+                        if j == i+1: #collected block
+                            obstacle = False
+                            goinghome = True
+                            path = np.insert(path, i+2, home, axis=0)
+                        # print('nah screw you')
+                        # #send gps coordinates to other robot
+                        # if blockcoords_sent == False:
+                        #     message_block = [1, *block_coords] # 0 - robot's coordinates, 1 - block coordinates 
+                        #     message_block = struct.pack("3f", *message_block)
+                        #     emitter.send(message_block)
+                        #     blockcoords_sent = True
+                        #     # reset blockcoords_sent after avoiding obstacle
                     elif colour == None:
-                        print('cant determine')
+                        print('B cant determine colour, but still collect it')
+                        leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)
+                        if j == i+1: #collected block
+                            obstacle = False
+                            goinghome = True
+                            path = np.insert(path, i+2, home, axis=0)
+                        # print('cant determine')
                         # leftSpeed  = 0
                         # rightSpeed = 0
 
@@ -219,12 +231,12 @@ while robot.step(TIME_STEP) != -1:
                 unloading = False
                 obstacle = False
     else:
-        print('too close')
+        print('B too close')
         leftSpeed = 0.0
         rightSpeed = 0.0
     
     if robot.getTime() >= timeout:
-        print("Out-of-time !")
+        print("B Out-of-time !")
         current_coordinates = getCoordinates(gps)
         # previous_coordinates = current_coordinates
         
@@ -243,7 +255,7 @@ while robot.step(TIME_STEP) != -1:
         goinghome   = True
         
         if atHome:
-            print("atHome")
+            print("B atHome")
             leftSpeed  = 0.0
             rightSpeed = 0.0
     
