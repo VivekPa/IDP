@@ -5,6 +5,13 @@ from .sensors_api import getCoordinates, getBearing, getRGB, get_attributes, ds_
 from .motion_api import bearing_round
 from .variables import deg2rad, block_width, wall_list_x, other_colour_blocks
 
+def bearing_floor(bearing, floor=90):
+    """
+    A function which returns the floor of a bearing with respect to 90 degrees.
+    """
+    floored_bearing = 90 * np.floor(bearing / 90)
+    return floored_bearing
+
 def find_obstacle_coords(ds, gps, compass):
     """
     A function which returns the coordinates of the incident point on the
@@ -24,6 +31,8 @@ def find_obstacle_coords(ds, gps, compass):
     #retrieve gps and bearing
     coordinates = getCoordinates(gps)
     bearing = getBearing(compass)
+    #find out the cartesian direction of the robot.
+    cartesian_bearing = bearing_round(bearing)
     #find absolute angle of detector. remember to convert to radians!
     ds_absolute_angle = (bearing + ds_attributes[1]) * (deg2rad)
     ds_absolute_disp_angle = (bearing + ds_attributes[2]) * (deg2rad)
@@ -31,12 +40,12 @@ def find_obstacle_coords(ds, gps, compass):
     #find coordinates.
     x_coord = (ds_reading * np.cos(ds_absolute_angle)) + (ds_distance * np.cos(ds_absolute_disp_angle)) + coordinates[0]
     z_coord = (ds_reading * np.sin(ds_absolute_angle)) + (ds_distance * np.sin(ds_absolute_disp_angle)) + coordinates[1]
-    
-    obstacle_coord = np.array([x_coord, z_coord])
 
-    return obstacle_coord
+    obstacle_coords = np.array([x_coord, z_coord])
 
-def find_block_coords(prelim_coords, bearing, ds_object):
+    return obstacle_coords, ds_absolute_angle
+
+def find_block_coords(prelim_coords, ds_absolute_angle, ds_object):
     """
     A function which returns the coordinates of the centre of a block.
 
@@ -44,21 +53,20 @@ def find_block_coords(prelim_coords, bearing, ds_object):
     robot's bearing in degrees), ds (the distance sensor which detected an
     obstacle)
     """
-    #find out the cartesian direction of the robot.
-    cartesian_bearing = bearing_round(bearing)
-    # print(type(cartesian_bearing))
+
     #use diagonal distance from corner to centre of block
     block_diagonal = (block_width/math.sqrt(2))/100
     #the corner detected will depend on the cartesian direction of the robot and
     #the distance sensor which detected the block (as they point in opposing
     #directions)
+    floored_line_bearing = bearing_floor(ds_absolute_angle)
     if ds_object.getName() == 'ds_left':
         #find angle of corner to centre. remember to convert to radians!
-        diagonal_absolute_angle = (bearing_round(bearing) - 45) * (deg2rad)
+        diagonal_absolute_angle = floored_line_bearing - 45) * (deg2rad)
         x_block = prelim_coords[0] + block_diagonal * np.cos(diagonal_absolute_angle)
         z_block = prelim_coords[1] + block_diagonal * np.sin(diagonal_absolute_angle)
     elif ds_object.getName() == 'ds_right':
-        diagonal_absolute_angle = (bearing_round(bearing) + 45) * (deg2rad)
+        diagonal_absolute_angle = floored_line_bearing + 135) * (deg2rad)
         x_block = prelim_coords[0] + block_diagonal * np.cos(diagonal_absolute_angle)
         z_block = prelim_coords[1] + block_diagonal * np.sin(diagonal_absolute_angle)
     else:
@@ -77,19 +85,19 @@ def obstacle_check(ds, gps, compass, obstacle, other_colour_blocks):
     Returns: block_coords, obstacle (Boolean)
     """
 
-    prelim_coords = find_obstacle_coords(ds,gps,compass)
-    
+    prelim_coords, ds_absolute_angle = find_obstacle_coords(ds,gps,compass)
+
     wall_coord = wall_list_x[1]
     obstacle_tolerance = 0.01
     lower_wall = wall_coord - obstacle_tolerance
     upper_wall = wall_coord + obstacle_tolerance
-    
+
     if lower_wall <= abs(prelim_coords[0]) <= upper_wall or lower_wall <= abs(prelim_coords[1]) <= upper_wall:
         # print('All okay! Just a wall')
         obstacle = False
         block_coords = None
         pass
-    
+
     else:
         #check if the object has already been recorded
         obstacle = True
@@ -101,6 +109,6 @@ def obstacle_check(ds, gps, compass, obstacle, other_colour_blocks):
 
         # print('thats no moon!')
         if obstacle == True:
-            block_coords = find_block_coords(prelim_coords, getBearing(compass), ds)
+            block_coords = find_block_coords(prelim_coords, ds_absolute_angle, ds)
 
     return block_coords, obstacle

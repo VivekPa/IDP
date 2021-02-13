@@ -1,6 +1,9 @@
 import numpy as np
 import math
 import struct
+import sys
+
+print(sys.version)
 
 from controller import Robot, Motor, DistanceSensor, GPS, Emitter, Receiver, Camera
 
@@ -47,7 +50,7 @@ camera_right.enable(TIME_STEP)
 """"""
 
 while robot.step(TIME_STEP) != -1:
-    
+
     if i == len(path)-2:
         robotMachine.on_path_finishing()
 
@@ -158,7 +161,7 @@ while robot.step(TIME_STEP) != -1:
                         # print(i)
                         # print(path.size)
                         # print(last_known_point)
-                        path = np.insert(path, i+2, 
+                        path = np.insert(path, i+2,
                                         [last_known_point[0] + 0.1 * np.cos(cartesian_bearing * deg2rad),
                                          last_known_point[1] + 0.1 * np.sin(cartesian_bearing * deg2rad)],
                                          axis=0)
