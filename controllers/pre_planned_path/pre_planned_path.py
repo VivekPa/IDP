@@ -61,28 +61,28 @@ while robot.step(TIME_STEP) != -1:
     ds_1_value = ds_left.getValue()
     ds_2_value = ds_right.getValue()
 
-    #message_robot = [0, *current_coordinates] # 0 - robot's coordinates, 1 - block coordinates
-    message_robot = [0]                                         # Select message type as robot coordinates
-    message_robot.extend(current_coordinates)                   # Send coordinates
-    message_robot = struct.pack("3f",   message_robot[0],       # Pack message type
-                                        message_robot[1],       # Pack x coordinate
-                                        message_robot[2])       # Pack z coordinate
+    # #message_robot = [0, *current_coordinates] # 0 - robot's coordinates, 1 - block coordinates
+    # message_robot = [0]                                         # Select message type as robot coordinates
+    # message_robot.extend(current_coordinates)                   # Send coordinates
+    # message_robot = struct.pack("3f",   message_robot[0],       # Pack message type
+    #                                     message_robot[1],       # Pack x coordinate
+    #                                     message_robot[2])       # Pack z coordinate
 
-    emitter.send(message_robot)
+    # emitter.send(message_robot)
 
-    #region
-    #receive other robot's coordinates
-    #print('Receiver Queue length:'  , receiver.getQueueLength())
-    while receiver.getQueueLength() > 0:
-        message = receiver.getData()
-        message = np.array(list(struct.unpack("3f",message)))
-        if message[0] == 0:
-            other_robot_coordinates = message[1:]
-        elif message[0] == 1:
-            np.append(list_of_blocks, message[1:])
+    # #region
+    # #receive other robot's coordinates
+    # #print('Receiver Queue length:'  , receiver.getQueueLength())
+    # while receiver.getQueueLength() > 0:
+    #     message = receiver.getData()
+    #     message = np.array(list(struct.unpack("3f",message)))
+    #     if message[0] == 0:
+    #         other_robot_coordinates = message[1:]
+    #     elif message[0] == 1:
+    #         np.append(list_of_blocks, message[1:])
 
-        # print('Blue robot location:', other_robot_coordinates)
-        receiver.nextPacket() #deletes the head packet
+    #     # print('Blue robot location:', other_robot_coordinates)
+    #     receiver.nextPacket() #deletes the head packet
     
     # if receiver.getQueueLength() == 0:
     #     print('no message')
@@ -156,12 +156,12 @@ while robot.step(TIME_STEP) != -1:
                     elif colour == other_robot_colour or colour == 1: #implement avoidance function
                         print('R wrong colour, avoiding')
                         #send gps coordinates to other robot
-                        if blockcoords_sent == False:
-                            message_block = [1, *block_coords] # 0 - robot's coordinates, 1 - block coordinates 
-                            message_block = struct.pack("3f", *message_block)
-                            emitter.send(message_block)
-                            blockcoords_sent = True
-                            # reset blockcoords_sent after avoiding obstacle
+                        # if blockcoords_sent == False:
+                        #     message_block = [1, *block_coords] # 0 - robot's coordinates, 1 - block coordinates 
+                        #     message_block = struct.pack("3f", *message_block)
+                        #     emitter.send(message_block)
+                        #     blockcoords_sent = True
+                        #     # reset blockcoords_sent after avoiding obstacle
                         
                         other_colour_blocks.append(list(block_coords))
                         ox.append(round(block_coords[1]*100))
