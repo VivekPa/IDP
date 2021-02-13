@@ -69,7 +69,7 @@ def find_block_coords(prelim_coords, bearing, ds_object):
     print('Found block at:', block_coords)
     return block_coords
 
-def obstacle_check(ds, gps, compass, obstacle, other_colour_blocks):
+def obstacle_check(ds, gps, compass, obstacle, other_colour_blocks, indetermined_obs_blocks):
     """
     A function called if the distance sensors detect an object within the sweep lane. It determines whether the object
     is a block or a wall, calling the reciprocating_sweep function if it is a block.
@@ -81,7 +81,7 @@ def obstacle_check(ds, gps, compass, obstacle, other_colour_blocks):
     prelim_coords = find_obstacle_coords(ds,gps,compass)
     
     wall_coord = wall_list_x[1]
-    obstacle_tolerance = 0.01
+    obstacle_tolerance = 0.03
     lower_wall = wall_coord - obstacle_tolerance
     upper_wall = wall_coord + obstacle_tolerance
     
@@ -95,13 +95,18 @@ def obstacle_check(ds, gps, compass, obstacle, other_colour_blocks):
         #check if the object has already been recorded
         obstacle = True
         for coords in other_colour_blocks:
-            if ((coords[0] - 2.5 - obstacle_tolerance) <= coords[0] <= (coords[0] + 2.5 + obstacle_tolerance) and
-                    (coords[1] - 2.5 - obstacle_tolerance) <= (coords[1] + 2.5 + obstacle_tolerance)):
+            if ((coords[0] - .025 - obstacle_tolerance) <= prelim_coords[0] <= (coords[0] + 0.025 + obstacle_tolerance) and
+                    (coords[1] - 0.025 - obstacle_tolerance) <= prelim_coords[1] <= (coords[1] + 0.025 + obstacle_tolerance)):
                 print('Deja vu!')
                 obstacle = False
 
-        # print('thats no moon!')
-        if obstacle == True:
-            block_coords = find_block_coords(prelim_coords, getBearing(compass), ds)
+        for coords in indetermined_obs_blocks:
+            if ((coords[0] - .025 - obstacle_tolerance) <= prelim_coords[0] <= (coords[0] + 0.025 + obstacle_tolerance) and
+                    (coords[1] - 0.025 - obstacle_tolerance) <= prelim_coords[1] <= (coords[1] + 0.025 + obstacle_tolerance)):
+                print('Deja vu!')
+                obstacle = False
+
+    
+        block_coords = find_block_coords(prelim_coords, getBearing(compass), ds)
 
     return block_coords, obstacle

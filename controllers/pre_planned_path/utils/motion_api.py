@@ -48,12 +48,12 @@ def getDistanceandRotation(subpath):
 
     return distance, angle
 
-def moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i):
+def moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, a):
     """
-    Returns the leftSpeed and rightSpeed to move it in the correct direction and new i if it reaches the desired coordinate
+    Returns the leftSpeed and rightSpeed to move it in the correct direction and new a if it reaches the desired coordinate
 
-    Arguments: previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i
-    Returns: leftSpeed, rightSpeed, i
+    Arguments: previous_coordinates, current_coordinates, desired_coordinates, current_bearing, a
+    Returns: leftSpeed, rightSpeed, a
     """
     # MAX_SPEED = 6.28
     coordinates_list = [previous_coordinates,current_coordinates,desired_coordinates]
@@ -81,7 +81,7 @@ def moveTo(previous_coordinates, current_coordinates, desired_coordinates, curre
         if distance < 0.06: #stop once desired coordinate is nearby
             leftSpeed  = 0
             rightSpeed = 0
-            i += 1
+            a += 1
         elif distance < 1.0: #stop once desired coordinate is nearby
             leftSpeed  = 0.3 * MAX_SPEED
             rightSpeed = 0.3 * MAX_SPEED
@@ -95,14 +95,14 @@ def moveTo(previous_coordinates, current_coordinates, desired_coordinates, curre
             leftSpeed  = -0.5 * MAX_SPEED
             rightSpeed = 0.5 * MAX_SPEED
 
-    return leftSpeed, rightSpeed, i
+    return leftSpeed, rightSpeed, a
 
 def rotateTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, alignment):
     """
     Returns the leftSpeed and rightSpeed to rotate it to face the next coordinates
 
-    Arguments: previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i
-    Returns: leftSpeed, rightSpeed, i
+    Arguments: previous_coordinates, current_coordinates, desired_coordinates, current_bearing, a
+    Returns: leftSpeed, rightSpeed, a
     """
     # calculating desired bearing to get to desired coordinate from current coordinate
     ref_coordinates = np.array([current_coordinates[0]+1, current_coordinates[1]]) # to make previous vector always be [-1,0,0]
@@ -136,12 +136,12 @@ def rotateTo(previous_coordinates, current_coordinates, desired_coordinates, cur
 
     return leftSpeed, rightSpeed, alignment
 
-def reverseTo(previous_coordinates, current_coordinates, reverse_coords, i):
+def reverseTo(previous_coordinates, current_coordinates, reverse_coords, a):
     """
     Returns the leftSpeed and rightSpeed to reverse until it reaches the required coords
 
-    Arguments: previous_coordinates, current_coordinates, desired_coordinates, i
-    Returns: leftSpeed, rightSpeed, i
+    Arguments: previous_coordinates, current_coordinates, desired_coordinates, a
+    Returns: leftSpeed, rightSpeed, a
     """
     coordinates_list = np.array([previous_coordinates, current_coordinates, reverse_coords])
     distance = getDistanceandRotation(coordinates_list)[0]
@@ -149,13 +149,13 @@ def reverseTo(previous_coordinates, current_coordinates, reverse_coords, i):
     if distance < 0.08: #stop once desired coordinate is nearby
         leftSpeed  = 0
         rightSpeed = 0
-        i += 1
+        a += 1
 
     else: #just reverse
             leftSpeed  = -0.5 * MAX_SPEED
             rightSpeed = -0.5 * MAX_SPEED
 
-    return leftSpeed, rightSpeed, i
+    return leftSpeed, rightSpeed, a
 
 def calc_reverse_coords(current_coordinates, current_bearing):
     """
@@ -181,11 +181,11 @@ def stop(leftMotor, rightMotor):
     leftMotor.setVelocity(0.0)
     rightMotor.setVelocity(0.0)
 
-def return_to_home(path, i, home):
+def return_to_home(path, a, home):
     """
     This function returns the robot to home.
     """
-    path = np.insert(path, i+2, home, axis=0)
+    path = np.insert(path, a+2, home, axis=0)
 
 def unload():
     """

@@ -16,7 +16,8 @@ home        = red_base
 other_robot_coordinates = blue_base
 
 path = np.array([home,home])
-i = 0       # Path index
+og_path = [home,home]
+a = 0       # Path index
 previous_coordinates = path[0]
 
 dirname = os.path.dirname(__file__)
@@ -28,10 +29,35 @@ with open(filename, 'r') as csvfile:
         for j in range(len(row)):
             row[j] = float(row[j])
         point = (np.array(row))
+        list_point = list(point)
         path = np.vstack([path, point])
+        og_path.append(list_point)
 
 timeout = 240    # Simulation time in seconds when robot quits everything to go home
 #endregion
+"""Path Planning Variables"""
+
+# start and goal position
+sx = 100  # [cm]
+sy = 100  # [cm]
+gx = -100  # [cm]
+gy = 100 # [cm]
+
+# set obstacle positions
+ox, oy = [], []
+#wall boundaries
+for i in range(-120, 121):
+    ox.append(i)
+    oy.append(-120)
+for i in range(-120, 121):
+    ox.append(120)
+    oy.append(i)
+for i in range(-120, 121):
+    ox.append(i)
+    oy.append(120)
+for i in range(-120, 121):
+    ox.append(-120)
+    oy.append(i)
 
 """State Variables"""
 #region
@@ -62,7 +88,8 @@ MAX_SPEED = 10
 #initialise 'active block coordinates'
 list_of_blocks = np.array([])
 #initialise block list
-other_colour_blocks = np.array([])
+other_colour_blocks = []
+indetermined_obs_blocks = []
 #declare last cartesian bearing
 cartesian_bearing = 0
 #declare last known point
