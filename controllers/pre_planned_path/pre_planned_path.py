@@ -7,6 +7,9 @@ from utils.variables import *
 from utils.obstacle_detection import *
 from utils.sensors_api import *
 from utils.motion_api import *
+from utils.astarplanner import *
+from utils.path_planning import *
+
 
 """Initialise robot"""
 #region
@@ -49,7 +52,7 @@ camera_right.enable(TIME_STEP)
 # print(path_turns)
 
 while robot.step(TIME_STEP) != -1:
-    if i == len(path)-2:
+    if a == len(path)-2:
         print('reached the end')
 
     # get current device values
@@ -109,40 +112,26 @@ while robot.step(TIME_STEP) != -1:
         # detect obstacles
         right_obstacle = ds_1_value < 1000.0
         left_obstacle = ds_2_value < 1000.0
-
+        print(obstacle,left_obstacle,right_obstacle)
         #call obstacle_check only if obstacle outside of while loop and unloading is false
         #potentially changes obstacle to True if it detects a block
         if obstacle == False and unloading == False:
             if right_obstacle == True:
                 # obstacle_coords = find_obstacle_coords(ds_left, gps,compass)
-                block_coords, obstacle = obstacle_check(ds_left, gps, compass, obstacle, other_colour_blocks)
+                block_coords, obstacle = obstacle_check(ds_left, gps, compass, obstacle, other_colour_blocks, indetermined_obs_blocks)
                 #last_known_point = getCoordinates(gps)
             else:
                 pass
             if left_obstacle == True:
-                block_coords, obstacle = obstacle_check(ds_right, gps, compass, obstacle, other_colour_blocks)
+                block_coords, obstacle = obstacle_check(ds_right, gps, compass, obstacle, other_colour_blocks, indetermined_obs_blocks)
                 #last_known_point = getCoordinates(gps)
                 # print(last_known_point)
             else:
                 pass
         else:
             pass
-
-        # calculating distance between the desired coordinate and current coordinate
-        if len(path) > i+2:
-            desired_coordinates = path[i+2]
-
-        #check if robot has made a turn
-        if len(path) > i+2:
-            coordinates = path[i+1]
         
-        # print(path_turns, coordinates)
-        if coordinates[0] == turnpoints[0][0] and coordinates[1] == turnpoints[0][1]:
-            path_turns += 1
-            # print(coordinates,turnpoints)
-            turnpoints = np.delete(turnpoints,0, axis=0)
-            # print(turnpoints)
-            # print('turned')
+        desired_coordinates = path[a+2]
 
         if unloading == False:
             #obstacle Boolean here might be different from the obstacle boolean at the start of this loop due to the previous if statement
@@ -154,82 +143,81 @@ while robot.step(TIME_STEP) != -1:
                     alignment = False #switch alignment back to false
                     print('R Colour (0 - Red, 1-Green, 2- Blue, None- 1 each):', colour)
                     if colour == robot_colour: #implement collection function
+                        last_known_location = path[a+2]
                         print('R correct colour, collect it')
-                        leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)
-                        if j == i+1: #collected block
+                        leftSpeed, rightSpeed, b = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, a)
+                        if b == a+1: #collected block
                             obstacle = False
                             goinghome = True
-                            path = np.insert(path, i+2, home, axis=0)
-                            #region
-                            # print(type(last_known_point[0]))
-                            # print(type(cartesian_bearing))
-                            # path.insert(i+2, [last_known_point[0] + 0.1 * np.cos(cartesian_bearing * deg2rad), last_known_point[1] + 0.1 * np.sin(cartesian_bearing * deg2rad)])
-                            # print(i)
-                            # print(path.size)
-                            # print(last_known_point)
-                            # path = np.insert(path, i+2, 
-                            #                 [last_known_point[0] + 0.1 * np.cos(cartesian_bearing * deg2rad),
-                            #                  last_known_point[1] + 0.1 * np.sin(cartesian_bearing * deg2rad)],
-                            #                  axis=0)
-                            # if path_turns == 0:
-                            #     # path.insert(i+3, home)
-                            #     path = np.insert(path, i+3, home, axis=0)
-                            # else:
-                            #     # path.insert(i+3, [last_known_point[0], 1])
-                            #     # path.insert(i+4, home)
-                            #     path = np.insert(path, i+3, [last_known_point[0], 1], axis=0)
-                            #     path = np.insert(path, i+4, home, axis=0)
-                            #endregion
+                            destination = home
+                            path = get_total_path(current_coordinates,ox,oy,destination,path,a)
+                            leftSpeed, rightSpeed = 0,0
 
                     elif colour == other_robot_colour or colour == 1: #implement avoidance function
-                        print('R wrong colour, but still collect it')
-                        leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)
-                        if j == i+1: #collected block
-                            obstacle = False
-                            goinghome = True
-                            path = np.insert(path, i+2, home, axis=0)
-                        # print('nah screw you')
-                        # #send gps coordinates to other robot
-                        # if blockcoords_sent == False:
-                        #     message_block = [1, *block_coords] # 0 - robot's coordinates, 1 - block coordinates 
-                        #     message_block = struct.pack("3f", *message_block)
-                        #     emitter.send(message_block)
-                        #     blockcoords_sent = True
-                        #     # reset blockcoords_sent after avoiding obstacle
-                    elif colour == None:
-                        print('R cant determine colour, but still collect it')
-                        leftSpeed, rightSpeed, j = moveTo(previous_coordinates, current_coordinates, block_coords, current_bearing, i)
-                        if j == i+1: #collected block
-                            obstacle = False
-                            goinghome = True
-                            path = np.insert(path, i+2, home, axis=0)
-                        # print('cant determine')
-                        # leftSpeed  = 0
-                        # rightSpeed = 0
+                        print('R wrong colour, avoiding')
+                        #send gps coordinates to other robot
+                        if blockcoords_sent == False:
+                            message_block = [1, *block_coords] # 0 - robot's coordinates, 1 - block coordinates 
+                            message_block = struct.pack("3f", *message_block)
+                            emitter.send(message_block)
+                            blockcoords_sent = True
+                            # reset blockcoords_sent after avoiding obstacle
+                        
+                        other_colour_blocks.append(list(block_coords))
+                        ox.append(round(block_coords[1]*100))
+                        oy.append(round(block_coords[0]*100))
 
-                    #obstacle = False #change obstacle back to False after collecting the block
-                    #print(obstacle)
-                    # leftMotor.setVelocity(leftSpeed)
-                    # rightMotor.setVelocity(rightSpeed)
-                    # print('trying to break')
-                    # break
-            # elif obstacle == True and goinghome == True:
-            #     print('trying to avoid')
-            #     #implement avoidance function
+                        while np.linalg.norm(np.array(block_coords) - np.array(path[a+2])) < 0.2:
+                            a+=1
+
+                        destination = path[a+2]
+                        path = get_total_path(current_coordinates,ox,oy,destination,path,a)
+                    
+                        obstacle = False
+                        blockcoords_sent = False
+                        leftSpeed, rightSpeed = 0,0
+                        print('path', path[a+2:])
+                    
+                    elif colour == None:
+                        print('R cant determine')
+                        leftSpeed  = 0
+                        rightSpeed = 0
+
+            elif obstacle == True and goinghome == True:
+                print('trying to avoid')
+                #implement avoidance function
+                indetermined_obs_blocks.append(list(block_coords))
+                print(indetermined_obs_blocks)
+                ox.append(round(block_coords[1]*100))
+                oy.append(round(block_coords[0]*100))
+                while np.linalg.norm(np.array(block_coords) - np.array(path[a+2])) < 0.2:
+                    a+=1
+
+                destination = path[a+2]
+                path = get_total_path(current_coordinates,ox,oy,destination,path,a)
+                leftSpeed, rightSpeed = 0,0
             
+                obstacle = False
             else:
-                # print(desired_coordinates)
-                # print(current_coordinates)
-                # print(previous_coordinates)
-                leftSpeed, rightSpeed, i = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, i)
+                leftSpeed, rightSpeed, a = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, a)
+
         elif unloading == True:
-            leftSpeed, rightSpeed, j = reverseTo(previous_coordinates, current_coordinates, reverse_coords, i)
-            if j == i + 1:
-                i += 1
+            leftSpeed, rightSpeed, b = reverseTo(previous_coordinates, current_coordinates, reverse_coords, a)
+            if b == a + 1:
+                a += 1
                 #finish unloading, reset all state variables
                 goinghome = False
                 unloading = False
                 obstacle = False
+                while np.linalg.norm(np.array(home) - np.array(path[a+2])) < 0.1:
+                    a+=1
+                for i in range(len(indetermined_obs_blocks)): #remove those indetermined_obs_blocks from obstacle list
+                    ox.pop(-1)
+                    oy.pop(-1)
+                indetermined_obs_blocks = [] #clear indetermined_obs_blocks
+                destination = path[a+2]
+                path = get_total_path(current_coordinates,ox,oy,destination,path,a)
+                
     else:
         print('R too close')
         leftSpeed = 0.0
@@ -243,12 +231,12 @@ while robot.step(TIME_STEP) != -1:
         if robot.getTime() == timeout:
             previous_coordinates = current_coordinates
             path = np.array([previous_coordinates, current_coordinates, home])
-            i = 0
+            a = 0
             # path = np.append(path, [current_coordinates], axis=0)
         
         # rotateTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, alignment)
 
-        moveTo(previous_coordinates, current_coordinates, home, current_bearing, i)
+        moveTo(previous_coordinates, current_coordinates, home, current_bearing, a)
         # path = np.append(path, [home], axis=0)
         unloading   = False
         obstacle    = False
@@ -259,7 +247,7 @@ while robot.step(TIME_STEP) != -1:
             leftSpeed  = 0.0
             rightSpeed = 0.0
     
-    moveTo(previous_coordinates, current_coordinates, home, current_bearing, i)
+    moveTo(previous_coordinates, current_coordinates, home, current_bearing, a)
     leftMotor.setVelocity(leftSpeed)
     rightMotor.setVelocity(rightSpeed)
     previous_coordinates = current_coordinates
