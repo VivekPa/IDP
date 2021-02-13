@@ -18,8 +18,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.4081340287492805 -0.8208782582032086 -0.39948153873007464 1.8298514164375181
-  position -2.668242054148629 3.5094093110852125 -0.22779362517111512
+  orientation -0.36180954140002225 -0.8678891112943147 -0.3403855846663757 1.7490602913747453
+  position -4.233958261480894 4.186169119912549 -0.11999782985434787
 }
 TexturedBackground {
 }
@@ -31,7 +31,7 @@ Floor {
   }
 }
 DEF Block_R1 Solid {
-  translation -0.371689 0.05 0.521414
+  translation -0.12105 0.05 0.373698
   children [
     DEF BOX_R Shape {
       appearance PBRAppearance {
@@ -49,8 +49,8 @@ DEF Block_R1 Solid {
   physics Physics {
   }
 }
-DEF Block_R1 Solid {
-  translation 0.820981 0.05 0.381958
+DEF Block_R2 Solid {
+  translation 0.979588 0.05 -0.425697
   children [
     DEF BOX_R Shape {
       appearance PBRAppearance {
@@ -63,13 +63,12 @@ DEF Block_R1 Solid {
     }
   ]
   name "solid(13)"
-  contactMaterial "box"
   boundingObject USE BOX_R
   physics Physics {
   }
 }
 DEF Block_R3 Solid {
-  translation -0.761114 0.05 0.170839
+  translation -1.12441 0.05 0.492405
   children [
     USE BOX_R
   ]
@@ -79,7 +78,7 @@ DEF Block_R3 Solid {
   }
 }
 DEF Block_R4 Solid {
-  translation 0.115882 0.05 1.0411
+  translation -0.0170186 0.05 -0.92396
   children [
     USE BOX_R
   ]
@@ -92,7 +91,7 @@ DEF Block_R4 Solid {
   ]
 }
 DEF Block_B1 Solid {
-  translation 0.103406 0.05 -0.326156
+  translation 0.115885 0.05 1.11116
   children [
     DEF BOX_B Shape {
       appearance PBRAppearance {
@@ -110,7 +109,7 @@ DEF Block_B1 Solid {
   }
 }
 DEF Block_B2 Solid {
-  translation -0.0843808 0.05 -0.937256
+  translation -0.134518 0.05 -0.06772
   children [
     USE BOX_B
   ]
@@ -120,7 +119,7 @@ DEF Block_B2 Solid {
   }
 }
 DEF Block_B3 Solid {
-  translation -0.63097 0.05 -0.853537
+  translation -1.04911 0.05 -0.902705
   children [
     USE BOX_B
   ]
@@ -130,7 +129,7 @@ DEF Block_B3 Solid {
   }
 }
 DEF Block_B4 Solid {
-  translation 0.872051 0.05 -0.446503
+  translation 0.84587 0.05 0.188649
   children [
     USE BOX_B
   ]
@@ -418,6 +417,9 @@ Robot {
   physics Physics {
   }
   controller "blue_controller"
+  controllerArgs [
+    ""
+  ]
 }
 Robot {
   translation 1 0.05 1
@@ -465,7 +467,7 @@ Robot {
           ]
           endPoint Solid {
             translation 0.015 -0.005 -0.04
-            rotation 0 1.962616573903276e-17 0.9999999999999999 1.5707953071884027
+            rotation 1.5700932591226285e-16 1.5700932591226285e-16 0.9999999999999999 1.5707953071883924
             children [
               DEF WHEEL Shape {
                 appearance PBRAppearance {
@@ -493,7 +495,7 @@ Robot {
           ]
           endPoint Solid {
             translation -0.165 -0.005 -0.04
-            rotation 1.9633974819787447e-17 0 1 1.57
+            rotation -1.9633974819787484e-16 -1.9633974819787484e-16 1 1.5699999999999963
             children [
               USE WHEEL
             ]

@@ -185,7 +185,7 @@ def return_to_home(path, i, home):
     """
     This function returns the robot to home.
     """
-    path.insert(i+2,home)
+    path = np.insert(path, i+2, home, axis=0)
 
 def unload():
     """
