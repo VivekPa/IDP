@@ -172,7 +172,7 @@ def check_next_point(current_coords, desired_coords, check_distance):
     #find vector of travel
     relative_vector = desired_coords - current_coords
     #normalise to give a direction vector
-    direction_vector = relative_vector/check_distance
+    direction_vector = relative_vector / (np.linalg.norm(relative_vector))
     #find number of iterations to make for the given step
     n_iteration = int(check_distance / path_step)
     #create list of lambda l_values
