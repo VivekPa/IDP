@@ -83,7 +83,7 @@ while robot.step(TIME_STEP) != -1:
 
     #     # print('Blue robot location:', other_robot_coordinates)
     #     receiver.nextPacket() #deletes the head packet
-    
+
     # if receiver.getQueueLength() == 0:
     #     print('no message')
     #endregion
@@ -107,7 +107,7 @@ while robot.step(TIME_STEP) != -1:
 
     distance_btw_robots = np.linalg.norm(np.array(current_coordinates) - np.array(other_robot_coordinates))
     # print('distance', distance_btw_robots)
-    
+
     if distance_btw_robots > 2*0.2:
         # detect obstacles
         right_obstacle = ds_1_value < 1000.0
@@ -130,7 +130,7 @@ while robot.step(TIME_STEP) != -1:
                 pass
         else:
             pass
-        
+
         desired_coordinates = path[a+2]
 
         if unloading == False:
@@ -157,12 +157,12 @@ while robot.step(TIME_STEP) != -1:
                         print('R wrong colour, avoiding')
                         #send gps coordinates to other robot
                         # if blockcoords_sent == False:
-                        #     message_block = [1, *block_coords] # 0 - robot's coordinates, 1 - block coordinates 
+                        #     message_block = [1, *block_coords] # 0 - robot's coordinates, 1 - block coordinates
                         #     message_block = struct.pack("3f", *message_block)
                         #     emitter.send(message_block)
                         #     blockcoords_sent = True
                         #     # reset blockcoords_sent after avoiding obstacle
-                        
+
                         other_colour_blocks.append(list(block_coords))
                         ox.append(round(block_coords[1]*100))
                         oy.append(round(block_coords[0]*100))
@@ -172,12 +172,12 @@ while robot.step(TIME_STEP) != -1:
 
                         destination = path[a+2]
                         path = get_total_path(current_coordinates,ox,oy,destination,path,a)
-                    
+
                         obstacle = False
                         blockcoords_sent = False
                         leftSpeed, rightSpeed = 0,0
                         print('path', path[a+2:])
-                    
+
                     elif colour == None:
                         print('R cant determine')
                         leftSpeed  = 0
@@ -196,7 +196,7 @@ while robot.step(TIME_STEP) != -1:
                 destination = path[a+2]
                 path = get_total_path(current_coordinates,ox,oy,destination,path,a)
                 leftSpeed, rightSpeed = 0,0
-            
+
                 obstacle = False
             else:
                 leftSpeed, rightSpeed, a = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, a)
@@ -217,23 +217,23 @@ while robot.step(TIME_STEP) != -1:
                 indetermined_obs_blocks = [] #clear indetermined_obs_blocks
                 destination = path[a+2]
                 path = get_total_path(current_coordinates,ox,oy,destination,path,a)
-                
+
     else:
         print('R too close')
         leftSpeed = 0.0
         rightSpeed = 0.0
-    
+
     if robot.getTime() >= timeout:
         print("R Out-of-time !")
         current_coordinates = getCoordinates(gps)
         # previous_coordinates = current_coordinates
-        
+
         if robot.getTime() == timeout:
             previous_coordinates = current_coordinates
             path = np.array([previous_coordinates, current_coordinates, home])
             a = 0
             # path = np.append(path, [current_coordinates], axis=0)
-        
+
         # rotateTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, alignment)
 
         moveTo(previous_coordinates, current_coordinates, home, current_bearing, a)
@@ -241,12 +241,12 @@ while robot.step(TIME_STEP) != -1:
         unloading   = False
         obstacle    = False
         goinghome   = True
-        
+
         if atHome:
             print("R atHome")
             leftSpeed  = 0.0
             rightSpeed = 0.0
-    
+
     moveTo(previous_coordinates, current_coordinates, home, current_bearing, a)
     leftMotor.setVelocity(leftSpeed)
     rightMotor.setVelocity(rightSpeed)
