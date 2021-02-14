@@ -170,22 +170,20 @@ def calc_reverse_coords(current_coordinates, current_bearing):
     desired_bearing = desired_bearing * (deg2rad)
     reverse_coords = np.array([ current_coordinates[0] + 0.4*np.cos(desired_bearing),
                                 current_coordinates[1] + 0.4*np.sin(desired_bearing)])
-
     return reverse_coords
 
-def stop(leftMotor, rightMotor):
-    
+def calc_collection_coords(block_coords, current_bearing):
     """
-    This function stops the robot.
+    Calculates the coordinates it needs to move to collect the block (slightly further than block coords)
+    Arguments: block_coords, current_bearing
+    Returns: collection_coords
     """
-    leftMotor.setVelocity(0.0)
-    rightMotor.setVelocity(0.0)
+    offset_distance = 0.03
+    desired_bearing = current_bearing * (deg2rad)
+    collection_coords = np.array([block_coords[0] + offset_distance*np.cos(desired_bearing),
+                                block_coords[1] + offset_distance*np.sin(desired_bearing)])
 
-def return_to_home(path, a, home):
-    """
-    This function returns the robot to home.
-    """
-    path = np.insert(path, a+2, home, axis=0)
+    return collection_coords
 
 def unload():
     """
@@ -197,3 +195,5 @@ def unload():
     rightSpeed = -0.5 * MAX_SPEED
 
     return leftSpeed, rightSpeed
+
+

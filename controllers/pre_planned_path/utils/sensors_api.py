@@ -74,6 +74,23 @@ def getRGB(camera_left, camera_right):
 
     return colour  #, red, green, blue
 
+# def getRGB(camera):
+#     """
+#     Returns: integer cooresponding to colour with largest pixel value as well individual pixel values
+#         0: red
+#         1: green
+#         2: blue
+#     """
+#     #red   = RGB[0]
+#     #green = RGB[1]
+#     #blue  = RGB[2]
+
+#     image= camera.getImageArray()
+#     RGB = image[0][0]
+#     colour = RGB.index(max(RGB))
+
+#     return colour  #, red, green, blue
+
 def getBearing(compass):
     """
     Returns the bearing based off the compass north reading

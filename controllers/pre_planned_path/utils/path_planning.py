@@ -7,6 +7,9 @@ import numpy as np
 move_straight = False
 ARENA_WIDTH     = 240 #[cm]
 HOME_WIDTH      = 40    #[cm]
+deg2rad = 0.01745329252
+block_width = 5
+pass_distance = 0.12
 
 def remove_redundant(xc, yc): #for straight movement
         xc = xc.copy()
@@ -50,7 +53,7 @@ def get_corners(rx, ry): #for movement with diagonals
 def findpath(sx,sy,gx,gy,ox,oy,show_animation):
     
     grid_size = 5  # [cm]
-    robot_radius = 12.5 + 5  + 2# [m]
+    robot_radius = 12.5 + 5  + 2# [cm]
     
     if show_animation:  # pragma: no cover
         fig, ax = plt.subplots(1,1,figsize=(8,8))
@@ -82,7 +85,6 @@ def findpath(sx,sy,gx,gy,ox,oy,show_animation):
     else:
         nrx, nry = get_corners(rx, ry)
 
-    print(rx, ry)
     print(nrx, nry)
     if show_animation:  # pragma: no cover
         plt.plot(rx, ry, "-r")
@@ -107,3 +109,80 @@ def get_total_path(current_coordinates,ox,oy,destination,path,a,show_animation=T
         path = np.insert(path, a+2+i, new_coordinates, axis = 0)
     
     return path
+
+def find_bearing(relative_vector):
+    """
+    This function returns the bearing of a vector from North.
+    """
+    acw_from_x = np.arctan2(relative_vector[1], relative_vector[0]) / deg2rad
+    bearing = (-1) * acw_from_x
+    if bearing <= 0:
+        bearing += 360
+    return bearing
+
+def find_intersection(a,b,c,d):
+    pz = ((a[1]*b[0]-a[0]*b[1])*(c[1]-d[1])-(a[1]-b[1])*(c[1]*d[0]-c[0]*d[1])) / ((a[1]-b[1])*(c[0]-d[0])-(a[0]-b[0])*(c[1]-d[1]))
+    px = ((a[1]*b[0]-a[0]*b[1])*(c[0]-d[0])-(a[0]-b[0])*(c[1]*d[0]-c[0]*d[1])) / ((a[1]-b[1])*(c[0]-d[0])-(a[0]-b[0])*(c[1]-d[1]))
+    return px,pz
+
+def find_point_round_block(current_coords, desired_coords, direction_vector, block_coords, leftright):
+    """
+    Function that finds the point to avoid a block tangentially
+    """
+    #find the bearing of the tangent
+    block_vector1 = block_coords - current_coords
+    d1_block = np.linalg.norm(block_vector1)
+    tangent_angle1 = leftright * np.arcsin(pass_distance / d1_block) / deg2rad
+    tangent_bearing1 = find_bearing(block_vector1) + tangent_angle1
+
+    #find an arbitrary point on the tangent line
+    tangent_point1_x = current_coords[0] + np.cos(tangent_bearing1 * deg2rad)
+    tangent_point1_z = current_coords[1] + np.sin(tangent_bearing1 * deg2rad)
+    tangent_point1 = np.array([tangent_point1_x, tangent_point1_z])
+
+    #now repeat from the other side
+    block_vector2 = block_coords - desired_coords
+    d2_block = np.linalg.norm(block_vector2)
+    tangent_angle2 = leftright/abs(leftright) * np.arcsin(pass_distance / d1_block) / deg2rad
+    tangent_bearing2 = find_bearing(block_vector2) - tangent_angle2
+    print('2 quantities are', block_vector2, d2_block, tangent_angle2, tangent_bearing2)
+
+    #find an arbitrary point on this tangent line
+    tangent_point2_x = desired_coords[0] + np.cos(tangent_bearing2 * deg2rad)
+    tangent_point2_z = desired_coords[1] + np.sin(tangent_bearing2 * deg2rad)
+    tangent_point2 = np.array([tangent_point2_x, tangent_point2_z])
+
+    #the intersection of the two tangents is
+    intersection_x, intersection_z = find_intersection(current_coords, tangent_point1, desired_coords, tangent_point2)
+    target_coords = np.array([intersection_x, intersection_z])
+    return target_coords
+
+def check_next_point(current_coords, desired_coords, check_distance, other_colour_blocks):
+    #define path step
+    path_step = 0.001
+    #find vector of travel
+    relative_vector = desired_coords - current_coords
+    #normalise to give a direction vector
+    direction_vector = relative_vector/check_distance
+    #find number of iterations to make for the given step
+    n_iteration = int(check_distance / path_step)
+    #create list of lambda l_values
+    l_values = []
+    for i in range(1, n_iteration):
+        l_values.append(i * path_step)
+    #now iterate through lambda until collides with a block
+    block = False
+    for l in l_values:
+        #find the coordinates on the line at this lambda
+        line_coords = current_coords + l * direction_vector
+        #now check if it collides with any block
+        for block_coords in other_colour_blocks:
+            line_block_vector = block_coords - line_coords
+            d_line_block = np.linalg.norm(line_block_vector)
+            #if it collides with a block, return true
+            if d_line_block < pass_distance:
+                block = True
+                break
+        if block:
+            break
+    return block

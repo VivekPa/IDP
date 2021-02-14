@@ -63,9 +63,12 @@ for i in range(-120, 121):
 #region
 unloading   = False         # Unloading state
 obstacle    = False         # Obstacle detection state
+obstacle1   = False
+obstacle2   = False
 goinghome   = False         # Going Home state
 atHome      = True          # At Home state
 blockcoords_sent = False
+colour_determined = False
 
 #endregion
 
