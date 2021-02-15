@@ -11,12 +11,16 @@ other_robot_colour = 0
 """Define Waypoints and Home"""
 #region
 red_base    = [1,1]
+red_standby = [1,0.7]
 blue_base   = [1,-1]
+blue_standby = [1,-0.7]
 home        = blue_base
+standby     = blue_standby
 other_robot_coordinates = red_base
 
 path = np.array([home,home])
-i = 0       # Path index
+og_path = [home,home]
+a = 0       # Path index
 previous_coordinates = path[0]
 
 dirname = os.path.dirname(__file__)
@@ -28,19 +32,51 @@ with open(filename, 'r') as csvfile:
         for j in range(len(row)):
             row[j] = float(row[j])
         point = (np.array(row))
+        list_point = list(point)
         path = np.vstack([path, point])
+        og_path.append(list_point)
 
-timeout = 240    # Simulation time in seconds when robot quits everything to go home
+timeout = 300    # Simulation time in seconds when robot quits everything to go home
 #endregion
+"""Path Planning Variables"""
+
+# start and goal position
+sx = 100  # [cm]
+sy = 100  # [cm]
+gx = -100  # [cm]
+gy = 100 # [cm]
+
+# set obstacle positions
+ox, oy = [], []
+exceed= 2 #12.5 - 7.5
+#wall boundaries
+for i in range(-120-exceed, 121+exceed):
+    ox.append(i)
+    oy.append(-120-exceed)
+for i in range(-120-exceed, 121+exceed):
+    ox.append(120+exceed)
+    oy.append(i)
+for i in range(-120-exceed, 121+exceed):
+    ox.append(i)
+    oy.append(120+exceed)
+for i in range(-120-exceed, 121+exceed):
+    ox.append(-120-exceed)
+    oy.append(i)
 
 """State Variables"""
 #region
 unloading   = False         # Unloading state
 obstacle    = False         # Obstacle detection state
+obstacle1   = False
+obstacle2   = False
 goinghome   = False         # Going Home state
 atHome      = True          # At Home state
 blockcoords_sent = False
-
+colour_determined = False
+getting_away = False
+other_robot_done = False
+started_collecting = False
+end_of_sweep_message_sent = False
 #endregion
 
 """Miscellaneous Variables"""
@@ -60,27 +96,15 @@ MAX_SPEED = 10
 """Obstacle variables"""
 #region
 #initialise 'active block coordinates'
-list_of_blocks = np.array([])
+list_of_blocks = []
 #initialise block list
-other_colour_blocks = np.array([])
+other_colour_blocks = []
+indetermined_obs_blocks = []
 #declare last cartesian bearing
 cartesian_bearing = 0
 #declare last known point
 last_known_point = np.array([])
 #declare turn variable to decide on path home
 path_turns = 0
-# turnpoints = np.array([[-1, 0, 0.6], [1, 0, 0.2], [5,5]]) #have a dummy at the end
-turnpoints = np.array([[-1, 0, 0.6], [1, 0, 0.2]]) #have a dummy at the end
-# turnpoints = np.array([])
-
+turnpoints = np.array([[-1, 1.0], [-1, 0.6],[5,5]]) #have a dummy at the end
 #endregion
-#
-# 1,-0.2
-# 0,-0.2
-# -1,-0.2
-# -1,-0.6
-# 0,-0.6
-# 0.6,-0.6
-# 0.6,-1
-# 0,-1
-# -1,-1

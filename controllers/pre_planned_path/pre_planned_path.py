@@ -51,20 +51,41 @@ camera_right.enable(TIME_STEP)
 #endregion
 
 """"""
-# print(i)
-# print(path_turns)
 
 while robot.step(TIME_STEP) != -1:
-    if a == len(path)-2:
-        print('R reached the end')
-
     # get current device values
     current_coordinates = getCoordinates(gps)
     current_bearing = getBearing(compass)
     ds_1_value = ds_left.getValue()
     ds_2_value = ds_right.getValue()
 
-    #message_robot = [0, *current_coordinates] # 0 - robot's coordinates, 1 - block coordinates
+    if a == len(path)-2:
+        # print('R reached the end')
+        if other_robot_done == True:
+            if started_collecting == False:
+                print('add list of blocks to path')
+                path = np.append(path, np.array(list_of_blocks), axis = 0)
+                started_collecting = True
+                
+            else: #finished collecting (when started collecting == True and reaches end of path)
+                message = [2,0,0] # first digit: 0 - robot's coordinates, 1 - block coordinates , 2- done sweeping/collecting #2nd and 3rd digit: dummy values
+                message = struct.pack("3f", *message)
+                emitter.send(message)
+                path = np.vstack([path, current_coordinates])
+                other_robot_done = False
+                started_collecting = False
+                robot_final_done = True
+        else:
+            a-=1
+            
+        # print('going home')
+        # obstacle = False
+        # goinghome = True
+        # destination = standby
+        # path = get_total_path(current_coordinates,ox,oy,destination,path,a,show_animation = False)
+        # leftSpeed, rightSpeed = 0,0
+
+    #message_robot = [0, *current_coordinates] # 0 - robot's coordinates, 1 - block coordinates, 2-done sweeping/collecting
     message_robot = [0]                                         # Select message type as robot coordinates
     message_robot.extend(current_coordinates)                   # Send coordinates
     message_robot = struct.pack("3f",   message_robot[0],       # Pack message type
@@ -82,7 +103,10 @@ while robot.step(TIME_STEP) != -1:
         if message[0] == 0:
             other_robot_coordinates = message[1:]
         elif message[0] == 1:
-            np.append(list_of_blocks, message[1:])
+            list_of_blocks.append(list(message[1:]))
+            #path = np.append(path, np.array([message[1:]]), axis = 0)
+        elif message[0] == 2:
+            other_robot_done = True
 
         # print('Blue robot location:', other_robot_coordinates)
         receiver.nextPacket() #deletes the head packet
@@ -109,6 +133,7 @@ while robot.step(TIME_STEP) != -1:
     # print('distance', distance_btw_robots)
     
     if distance_btw_robots > 2*0.2:
+        getting_away = False
         # detect obstacles
         right_obstacle = ds_1_value < 1000.0
         left_obstacle = ds_2_value < 1000.0
@@ -194,7 +219,17 @@ while robot.step(TIME_STEP) != -1:
                             oy.append(round(block_coords[0]*100))
 
                             while np.linalg.norm(np.array(block_coords) - np.array(path[a+2])) < 0.2:
-                                a+=1
+                                if a == len(path)-3:
+                                    message = [2,0,0] # first digit: 0 - robot's coordinates, 1 - block coordinates , 2- done sweeping/collecting #2nd and 3rd digit: dummy values
+                                    message = struct.pack("3f", *message)
+                                    emitter.send(message)
+                                    path = np.vstack([path, current_coordinates])
+                                    other_robot_done = False
+                                    started_collecting = False
+                                    robot_final_done = True
+                                    break
+                                else:
+                                    a+=1
 
                             destination = path[a+2]
                             path = get_total_path(current_coordinates,ox,oy,destination,path,a, show_animation=False)
@@ -204,6 +239,7 @@ while robot.step(TIME_STEP) != -1:
                             leftSpeed, rightSpeed = 0,0
                         elif colour == 1:
                             print('R green')
+                            leftSpeed, rightSpeed, alignment = rotateTo(previous_coordinates, current_coordinates, block_coords, current_bearing-5, alignment)
                             colour_determined = False
                         elif colour == None:
                             print('R cant determine')
@@ -255,7 +291,18 @@ while robot.step(TIME_STEP) != -1:
                 ox.append(round(block_coords[1]*100))
                 oy.append(round(block_coords[0]*100))
                 while np.linalg.norm(np.array(block_coords) - np.array(path[a+2])) < 0.2:
-                    a+=1
+                    # a+=1
+                    if a == len(path)-3:
+                        message = [2,0,0] # first digit: 0 - robot's coordinates, 1 - block coordinates , 2- done sweeping/collecting #2nd and 3rd digit: dummy values
+                        message = struct.pack("3f", *message)
+                        emitter.send(message)
+                        path = np.vstack([path, current_coordinates])
+                        other_robot_done = False
+                        started_collecting = False
+                        robot_final_done = True
+                        break
+                    else:
+                        a+=1
 
                 destination = path[a+2]
                 path = get_total_path(current_coordinates,ox,oy,destination,path,a,show_animation = False)
@@ -282,11 +329,55 @@ while robot.step(TIME_STEP) != -1:
                 destination = path[a+2]
                 path = get_total_path(current_coordinates,ox,oy,destination,path,a, show_animation = False)
                 
-    else:
+    elif distance_btw_robots <= 2*0.2 and getting_away == False:
         print('R too close')
-        leftSpeed = 0.0
-        rightSpeed = 0.0
+        if robot_final_done == True:
+            leftSpeed, rightSpeed = 0,0
+        else:
+            getting_away = True
+
+            #create a square of obstacles for the robot
+            for i in range(round(other_robot_coordinates[1]*100)-7,round(other_robot_coordinates[1]*100)+8,2): 
+                ox.append(i)
+                oy.append(round(other_robot_coordinates[0]*100)-7)
+                ox.append(i)
+                oy.append(round(other_robot_coordinates[0]*100)+7)
+
+            for i in range(round(other_robot_coordinates[0]*100)-7,round(other_robot_coordinates[0]*100)+8,2): 
+                oy.append(i)
+                ox.append(round(other_robot_coordinates[1]*100)-7)
+                oy.append(i)
+                ox.append(round(other_robot_coordinates[1]*100)+7)
+
+            while np.linalg.norm(np.array(other_robot_coordinates) - np.array(path[a+2])) < 0.4:
+                # if list(path[a+2]) in list_of_blocks:
+                #     path = np.append(path, np.array([path[a+2]]), axis = 0) # append that point to the back
+                if a == len(path)-3:
+                    message = [2,0,0] # first digit: 0 - robot's coordinates, 1 - block coordinates , 2- done sweeping/collecting #2nd and 3rd digit: dummy values
+                    message = struct.pack("3f", *message)
+                    emitter.send(message)
+                    path = np.vstack([path, current_coordinates])
+                    other_robot_done = False
+                    started_collecting = False
+                    robot_final_done = True
+                    break
+                else:
+                    a+=1
+
+                
+
+            destination = path[a+2]
+            path = get_total_path(current_coordinates,ox,oy,destination,path,a,show_animation = True)
+            desired_coordinates = path[a+2]
+            leftSpeed, rightSpeed, a = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, a)
+            for i in range(32): #delete robot's obstacles
+                ox.pop(-1)
+                oy.pop(-1)
     
+    else:
+        desired_coordinates = path[a+2]
+        leftSpeed, rightSpeed, a = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, a)
+
     if robot.getTime() >= timeout:
         print("R Out-of-time !")
         current_coordinates = getCoordinates(gps)

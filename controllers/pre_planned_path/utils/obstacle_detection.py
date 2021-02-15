@@ -97,13 +97,13 @@ def obstacle_check(ds, gps, compass, obstacle, other_colour_blocks, indetermined
     bottom_edge_home = home[0] - 0.2
     
     if lower_wall <= abs(prelim_coords[0]) <= upper_wall or lower_wall <= abs(prelim_coords[1]) <= upper_wall:
-        print('All okay! Just a wall')
+        # print('All okay! Just a wall')
         obstacle = False
         block_coords = None
         pass
 
     elif bottom_edge_home <= prelim_coords[0] and left_edge_home <= prelim_coords[1] <= right_edge_home:
-        print('All okay! blocks at home')
+        # print('All okay! blocks at home')
         obstacle = False
         block_coords = None
         pass

@@ -11,8 +11,11 @@ other_robot_colour = 2
 """Define Waypoints and Home"""
 #region
 red_base    = [1,1]
+red_standby = [1,0.7]
 blue_base   = [1,-1]
+blue_standby = [1,-0.7]
 home        = red_base
+standby     = red_standby
 other_robot_coordinates = blue_base
 
 path = np.array([home,home])
@@ -33,7 +36,7 @@ with open(filename, 'r') as csvfile:
         path = np.vstack([path, point])
         og_path.append(list_point)
 
-timeout = 240    # Simulation time in seconds when robot quits everything to go home
+timeout = 300    # Simulation time in seconds when robot quits everything to go home
 #endregion
 """Path Planning Variables"""
 
@@ -45,18 +48,19 @@ gy = 100 # [cm]
 
 # set obstacle positions
 ox, oy = [], []
+exceed= 2 #12.5 - 7.5
 #wall boundaries
-for i in range(-120, 121):
+for i in range(-120-exceed, 121+exceed):
     ox.append(i)
-    oy.append(-120)
-for i in range(-120, 121):
-    ox.append(120)
+    oy.append(-120-exceed)
+for i in range(-120-exceed, 121+exceed):
+    ox.append(120+exceed)
     oy.append(i)
-for i in range(-120, 121):
+for i in range(-120-exceed, 121+exceed):
     ox.append(i)
-    oy.append(120)
-for i in range(-120, 121):
-    ox.append(-120)
+    oy.append(120+exceed)
+for i in range(-120-exceed, 121+exceed):
+    ox.append(-120-exceed)
     oy.append(i)
 
 """State Variables"""
@@ -69,6 +73,10 @@ goinghome   = False         # Going Home state
 atHome      = True          # At Home state
 blockcoords_sent = False
 colour_determined = False
+getting_away = False
+other_robot_done = False
+started_collecting = False
+robot_final_done = False
 
 #endregion
 
@@ -89,7 +97,7 @@ MAX_SPEED = 10
 """Obstacle variables"""
 #region
 #initialise 'active block coordinates'
-list_of_blocks = np.array([])
+list_of_blocks = []
 #initialise block list
 other_colour_blocks = []
 indetermined_obs_blocks = []

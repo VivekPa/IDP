@@ -24,9 +24,12 @@ def getDistanceandRotation(subpath):
     prev_vector = subpath[1] - subpath[0]
     new_vector = subpath[2] - subpath[1]
     distance = np.linalg.norm(new_vector)
-
+    angle_prev_vec = 0
     unit_prev_vector = prev_vector / np.linalg.norm(prev_vector)
-    unit_new_vector = new_vector / np.linalg.norm(new_vector)
+    if np.linalg.norm(new_vector) == 0:
+        unit_new_vector = new_vector / (np.linalg.norm(new_vector)+0.01)
+    else:
+        unit_new_vector = new_vector / np.linalg.norm(new_vector)
     angle_prev_vec = np.arctan(unit_prev_vector[1]/unit_prev_vector[0])/math.pi * 180
     
     if unit_new_vector[0] == 0: # to avoid divide by zero problems
@@ -34,6 +37,8 @@ def getDistanceandRotation(subpath):
             angle_new_vec = -90
         if unit_new_vector[1] < 0:
             angle_new_vec = 90
+        if unit_new_vector[1] == 0:
+            angle_new_vec = 0
     else:
         angle_new_vec = np.arctan(unit_new_vector[1]/unit_new_vector[0])/math.pi * 180
 
@@ -56,6 +61,8 @@ def moveTo(previous_coordinates, current_coordinates, desired_coordinates, curre
     Returns: leftSpeed, rightSpeed, a
     """
     # MAX_SPEED = 6.28
+    leftSpeed  = 0
+    rightSpeed = 0
     coordinates_list = [previous_coordinates,current_coordinates,desired_coordinates]
     distance = getDistanceandRotation(coordinates_list)[0]
 
