@@ -63,11 +63,13 @@ while robot.step(TIME_STEP) != -1:
         # print('R reached the end')
         if other_robot_done == True:
             if started_collecting == False:
+                #adds list of blocks detected by other robot to the path only after blue robot finishes it sweep
                 print('add list of blocks to path')
                 path = np.append(path, np.array(list_of_blocks), axis = 0)
                 started_collecting = True
                 
             else: #finished collecting (when started collecting == True and reaches end of path)
+                #sends message to blue robot after red robot finishes collecting its blocks
                 message = [2,0,0] # first digit: 0 - robot's coordinates, 1 - block coordinates , 2- done sweeping/collecting #2nd and 3rd digit: dummy values
                 message = struct.pack("3f", *message)
                 emitter.send(message)
@@ -76,6 +78,7 @@ while robot.step(TIME_STEP) != -1:
                 started_collecting = False
                 robot_final_done = True
         else:
+            #to prevent it from reaching end of path and timing out
             a-=1
             
         # print('going home')
@@ -105,7 +108,7 @@ while robot.step(TIME_STEP) != -1:
         elif message[0] == 1:
             list_of_blocks.append(list(message[1:]))
             #path = np.append(path, np.array([message[1:]]), axis = 0)
-        elif message[0] == 2:
+        elif message[0] == 2: #change status of other robot if it receives a 2
             other_robot_done = True
 
         # print('Blue robot location:', other_robot_coordinates)
@@ -130,7 +133,6 @@ while robot.step(TIME_STEP) != -1:
 
 
     distance_btw_robots = np.linalg.norm(np.array(current_coordinates) - np.array(other_robot_coordinates))
-    # print('distance', distance_btw_robots)
     
     if distance_btw_robots > 2*0.2:
         getting_away = False
@@ -219,7 +221,7 @@ while robot.step(TIME_STEP) != -1:
                             oy.append(round(block_coords[0]*100))
 
                             while np.linalg.norm(np.array(block_coords) - np.array(path[a+2])) < 0.2:
-                                if a == len(path)-3:
+                                if a == len(path)-3: #this bit is messy and not exactly correct..just ignore it
                                     message = [2,0,0] # first digit: 0 - robot's coordinates, 1 - block coordinates , 2- done sweeping/collecting #2nd and 3rd digit: dummy values
                                     message = struct.pack("3f", *message)
                                     emitter.send(message)
@@ -292,7 +294,7 @@ while robot.step(TIME_STEP) != -1:
                 oy.append(round(block_coords[0]*100))
                 while np.linalg.norm(np.array(block_coords) - np.array(path[a+2])) < 0.2:
                     # a+=1
-                    if a == len(path)-3:
+                    if a == len(path)-3: #same here..this bit is messy and not exactly correct..just ignore it
                         message = [2,0,0] # first digit: 0 - robot's coordinates, 1 - block coordinates , 2- done sweeping/collecting #2nd and 3rd digit: dummy values
                         message = struct.pack("3f", *message)
                         emitter.send(message)
@@ -331,7 +333,7 @@ while robot.step(TIME_STEP) != -1:
                 
     elif distance_btw_robots <= 2*0.2 and getting_away == False:
         print('R too close')
-        if robot_final_done == True:
+        if robot_final_done == True: #if the red robot finished collecting and the blue robot is collecting, just let the blue robot avoid it
             leftSpeed, rightSpeed = 0,0
         else:
             getting_away = True
@@ -349,7 +351,7 @@ while robot.step(TIME_STEP) != -1:
                 oy.append(i)
                 ox.append(round(other_robot_coordinates[1]*100)+7)
 
-            while np.linalg.norm(np.array(other_robot_coordinates) - np.array(path[a+2])) < 0.4:
+            while np.linalg.norm(np.array(other_robot_coordinates) - np.array(path[a+2])) < 0.4: #can change this distance
                 # if list(path[a+2]) in list_of_blocks:
                 #     path = np.append(path, np.array([path[a+2]]), axis = 0) # append that point to the back
                 if a == len(path)-3:
@@ -368,6 +370,7 @@ while robot.step(TIME_STEP) != -1:
 
             destination = path[a+2]
             path = get_total_path(current_coordinates,ox,oy,destination,path,a,show_animation = True)
+            #get_total_path(current_coordinates,ox,oy,destination,path,a,show_animation=True,robot_radius=19.5) #can change robot radius so that there is a larger buffer but risk no paths
             desired_coordinates = path[a+2]
             leftSpeed, rightSpeed, a = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, a)
             for i in range(32): #delete robot's obstacles

@@ -315,9 +315,9 @@ while robot.step(TIME_STEP) != -1:
                 
     elif distance_btw_robots <= 2*0.2 and getting_away == False:
         print('B too close')
-        if started_collecting == False:
+        if started_collecting == False: #if both robots sweeping or red robot collecting, just let the red robot avoid it
             leftSpeed, rightSpeed = 0,0
-        else:
+        else: #if blue robot collecting
             getting_away = True
 
             #create a square of obstacles for the robot
