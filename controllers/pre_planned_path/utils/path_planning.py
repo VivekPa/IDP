@@ -50,11 +50,19 @@ def get_corners(rx, ry): #for movement with diagonals
                 nry.append(ry[idx])
     return nrx, nry
 
+<<<<<<< HEAD
 def findpath(sx,sy,gx,gy,ox,oy,show_animation, robot_radius):
     
     grid_size = 5  # [cm]
     #robot_radius = 12.5 + 5  + 2# [cm]
     
+=======
+def findpath(sx,sy,gx,gy,ox,oy,show_animation):
+
+    grid_size = 5  # [cm]
+    robot_radius = 12.5 + 5  + 2# [m]
+
+>>>>>>> 37f72f9b7d1093730928460123012fb75f8569f6
     if show_animation:  # pragma: no cover
         fig, ax = plt.subplots(1,1,figsize=(8,8))
         plt.ylim((-ARENA_WIDTH/2, ARENA_WIDTH/2))
@@ -64,7 +72,7 @@ def findpath(sx,sy,gx,gy,ox,oy,show_animation, robot_radius):
         arena_patch = Rectangle((-ARENA_WIDTH/2, -ARENA_WIDTH/2), width = ARENA_WIDTH, height = ARENA_WIDTH, alpha = 0.5, fc = 'gray', ec = 'k', linestyle = '-', linewidth = 2.0)
         red_patch   = Rectangle((ARENA_WIDTH/2-HOME_WIDTH, ARENA_WIDTH/2-HOME_WIDTH), width = HOME_WIDTH, height = HOME_WIDTH, alpha = 0.5, fc = 'r')
         blue_patch   = Rectangle((-ARENA_WIDTH/2, ARENA_WIDTH/2-HOME_WIDTH), width = HOME_WIDTH, height = HOME_WIDTH, alpha =0.5, fc = 'b')
-        
+
         ax.add_patch(arena_patch)
         ax.add_patch(red_patch)
         ax.add_patch(blue_patch)
@@ -107,9 +115,26 @@ def get_total_path(current_coordinates,ox,oy,destination,path,a,show_animation=T
     for i in range(len(nrx)):
         new_coordinates= np.array([nry[i]/100,nrx[i]/100])
         path = np.insert(path, a+2+i, new_coordinates, axis = 0)
+<<<<<<< HEAD
     
     return path
 
+=======
+
+    return path
+
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+
+current = np.array([0,0])
+desired = np.array([1,1])
+other_colour_blocks = [np.array([0.6,0.5])]
+deg2rad = 0.01745329252
+block_width = 5
+pass_distance = 0.12
+
+>>>>>>> 37f72f9b7d1093730928460123012fb75f8569f6
 def find_bearing(relative_vector):
     """
     This function returns the bearing of a vector from North.
@@ -157,6 +182,7 @@ def find_point_round_block(current_coords, desired_coords, direction_vector, blo
     target_coords = np.array([intersection_x, intersection_z])
     return target_coords
 
+<<<<<<< HEAD
 def check_next_point(current_coords, desired_coords, check_distance, other_colour_blocks):
     #define path step
     path_step = 0.0015
@@ -164,6 +190,15 @@ def check_next_point(current_coords, desired_coords, check_distance, other_colou
     relative_vector = desired_coords - current_coords
     #normalise to give a direction vector
     direction_vector = relative_vector/check_distance
+=======
+def check_next_point(current_coords, desired_coords, check_distance):
+    #define path step
+    path_step = 0.001
+    #find vector of travel
+    relative_vector = desired_coords - current_coords
+    #normalise to give a direction vector
+    direction_vector = relative_vector / (np.linalg.norm(relative_vector))
+>>>>>>> 37f72f9b7d1093730928460123012fb75f8569f6
     #find number of iterations to make for the given step
     n_iteration = int(check_distance / path_step)
     #create list of lambda l_values
@@ -185,4 +220,8 @@ def check_next_point(current_coords, desired_coords, check_distance, other_colou
                 break
         if block:
             break
+<<<<<<< HEAD
     return block
+=======
+    return block
+>>>>>>> 37f72f9b7d1093730928460123012fb75f8569f6
