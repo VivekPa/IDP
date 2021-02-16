@@ -2,6 +2,7 @@ import math
 import numpy as np
 
 from .variables import MAX_SPEED, deg2rad
+from .variables import deg2rad, block_width, wall_list_x, other_colour_blocks, home
 
 def bearing_round(bearing, base = 90):
     """
@@ -89,12 +90,12 @@ def moveTo(previous_coordinates, current_coordinates, desired_coordinates, curre
             leftSpeed  = 0
             rightSpeed = 0
             a += 1
-        elif distance < 1.0: #stop once desired coordinate is nearby
+        elif distance < 0.8: #stop once desired coordinate is nearby
             leftSpeed  = 0.3 * MAX_SPEED
             rightSpeed = 0.3 * MAX_SPEED
         else: #if no bearing error and not near desired coordinate, just go straight
-            leftSpeed  = 0.5 * MAX_SPEED
-            rightSpeed = 0.5 * MAX_SPEED
+            leftSpeed  = 1.0 * MAX_SPEED
+            rightSpeed = 1.0 * MAX_SPEED
     elif bearing_error >= 0.5: #rotate right to reduce bearing error
             leftSpeed  = 0.5 * MAX_SPEED
             rightSpeed = -0.5 * MAX_SPEED
@@ -159,8 +160,8 @@ def reverseTo(previous_coordinates, current_coordinates, reverse_coords, a):
         a += 1
 
     else: #just reverse
-            leftSpeed  = -0.5 * MAX_SPEED
-            rightSpeed = -0.5 * MAX_SPEED
+            leftSpeed  = -0.7 * MAX_SPEED
+            rightSpeed = -0.7 * MAX_SPEED
 
     return leftSpeed, rightSpeed, a
 
@@ -177,6 +178,14 @@ def calc_reverse_coords(current_coordinates, current_bearing):
     desired_bearing = desired_bearing * (deg2rad)
     reverse_coords = np.array([ current_coordinates[0] + 0.4*np.cos(desired_bearing),
                                 current_coordinates[1] + 0.4*np.sin(desired_bearing)])
+    wall_coord = wall_list_x[1]
+    obstacle_tolerance = 0.06
+    lower_wall = wall_coord - obstacle_tolerance
+    upper_wall = wall_coord + obstacle_tolerance
+    
+    if lower_wall <= abs(reverse_coords[0]) <= upper_wall or lower_wall <= abs(reverse_coords[1]) <= upper_wall:
+        #reverse_coords = np.array([0.551,1.12])
+        reverse_coords = np.array([1.14,-0.583])
     return reverse_coords
 
 def calc_collection_coords(block_coords, current_bearing):
@@ -185,7 +194,7 @@ def calc_collection_coords(block_coords, current_bearing):
     Arguments: block_coords, current_bearing
     Returns: collection_coords
     """
-    offset_distance = 0.03
+    offset_distance = 0.00
     desired_bearing = current_bearing * (deg2rad)
     collection_coords = np.array([block_coords[0] + offset_distance*np.cos(desired_bearing),
                                 block_coords[1] + offset_distance*np.sin(desired_bearing)])

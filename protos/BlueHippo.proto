@@ -1,0 +1,216 @@
+#VRML_SIM R2021a utf8
+
+PROTO BlueHippo [
+]
+{
+Robot {
+  translation 1 0.05 -1
+  rotation 0 1 0 -1.57
+  children [
+    Solid {
+      translation 0 -0.03 -0.0665
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 0 0 0
+          }
+          geometry DEF CASTOR_BALL Sphere {
+            radius 0.01
+          }
+        }
+      ]
+      name "solid(2)"
+      contactMaterial "slippy"
+      boundingObject USE CASTOR_BALL
+      physics Physics {
+      }
+    }
+    DEF BODY Shape {
+      appearance PBRAppearance {
+        baseColor 0 0.5 1
+        metalness 0
+      }
+      geometry Box {
+        size 0.15 0.065 0.173
+      }
+    }
+    Transform {
+      translation 0.075 0 0.0865
+      children [
+        DEF WHEEL1 HingeJoint {
+          jointParameters HingeJointParameters {
+            anchor 0.015 -0.005 -0.04
+          }
+          device [
+            RotationalMotor {
+              name "wheel1"
+              maxTorque 100
+            }
+          ]
+          endPoint Solid {
+            translation 0.015000000000000013 -0.005000000000000012 -0.040000000000000036
+            rotation 7.850466295613127e-17 3.9252331478065635e-16 0.9999999999999999 1.5707953071883962
+            children [
+              DEF WHEEL Shape {
+                appearance PBRAppearance {
+                }
+                geometry Cylinder {
+                  height 0.03
+                  radius 0.035
+                }
+              }
+            ]
+            boundingObject USE WHEEL
+            physics Physics {
+            }
+          }
+        }
+        DEF WHEEL2 HingeJoint {
+          jointParameters HingeJointParameters {
+            anchor -0.165 -0.005 -0.04
+          }
+          device [
+            RotationalMotor {
+              name "wheel2"
+              maxTorque 100
+            }
+          ]
+          endPoint Solid {
+            translation -0.16500000000000015 -0.0049999999999999715 -0.039999999999999925
+            rotation 2.0419333812578985e-15 -7.853589927914994e-17 1 1.5699999999999965
+            children [
+              USE WHEEL
+            ]
+            name "solid(1)"
+            boundingObject USE WHEEL
+            physics Physics {
+            }
+          }
+        }
+        Solid {
+          translation -0.006 -0.01 0.04
+          children [
+            DEF ARM Shape {
+              appearance PBRAppearance {
+              }
+              geometry Box {
+                size 0.012 0.05 0.08
+              }
+            }
+          ]
+          name "solid(3)"
+          boundingObject USE ARM
+          physics Physics {
+          }
+        }
+        Solid {
+          translation -0.144 -0.01 0.04
+          children [
+            USE ARM
+          ]
+          name "solid(4)"
+          boundingObject USE ARM
+          physics Physics {
+          }
+        }
+        Solid {
+          translation -0.075 0.015 0.04
+          children [
+            DEF LID Shape {
+              appearance PBRAppearance {
+              }
+              geometry Box {
+                size 0.126 0.001 0.08
+              }
+            }
+          ]
+          name "solid(5)"
+          boundingObject USE LID
+          physics Physics {
+          }
+        }
+        DistanceSensor {
+          translation -0.001 -0.015 0.08
+          rotation 0 1 0 -2.61799
+          children [
+            DEF DS Shape {
+              appearance PBRAppearance {
+                baseColor 0 0 0
+                metalness 0
+              }
+              geometry Box {
+                size 0.01 0.01 0.01
+              }
+            }
+          ]
+          name "ds_left"
+          lookupTable [
+            0 0 0
+            0.3 1000 0
+          ]
+        }
+        DistanceSensor {
+          translation -0.149 -0.015 0.08
+          rotation 0 1 0 -0.5236
+          children [
+            USE DS
+          ]
+          name "ds_right"
+          lookupTable [
+            0 0 0
+            0.3 1000 0
+          ]
+        }
+        Camera {
+          translation -0.1 -0.015 0
+          rotation 0 1 0 3.14159
+          children [
+            USE DS
+          ]
+          name "camera_left"
+          recognitionColors [
+            0 0 0
+          ]
+          fieldOfView 0.7854
+          width 1
+          height 1
+          far 0.1
+        }
+        Camera {
+          translation -0.05 -0.015 0
+          rotation 0 1 0 3.14159
+          children [
+            USE DS
+          ]
+          name "camera_right"
+          recognitionColors [
+            0 0 0
+          ]
+          fieldOfView 0.7854
+          width 1
+          height 1
+          far 0.1
+        }
+        Emitter {
+          translation -0.075 -0.015 0
+        }
+        Receiver {
+          translation -0.075 -0.015 0
+        }
+        Compass {
+          translation -0.075 -0.015 0
+          rotation 0 1 0 -1.57
+        }
+        GPS {
+          translation -0.075 -0.015 0
+        }
+      ]
+    }
+  ]
+  name "BlueHippo"
+  boundingObject USE BODY
+  physics Physics {
+  }
+  controller "blue_controller"
+}
+}

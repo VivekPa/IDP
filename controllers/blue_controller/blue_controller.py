@@ -138,7 +138,7 @@ while robot.step(TIME_STEP) != -1:
     distance_btw_robots = np.linalg.norm(np.array(current_coordinates) - np.array(other_robot_coordinates))
     # print('distance', distance_btw_robots)
     
-    if distance_btw_robots > 2*0.2:
+    if distance_btw_robots > 2*0.22:
         # detect obstacles
         right_obstacle = ds_1_value < 1000.0
         left_obstacle = ds_2_value < 1000.0
@@ -224,7 +224,18 @@ while robot.step(TIME_STEP) != -1:
                             oy.append(round(block_coords[0]*100))
 
                             while np.linalg.norm(np.array(block_coords) - np.array(path[a+2])) < 0.2:
-                                a+=1
+                                if a == len(path)-3:
+                                    if end_of_sweep_message_sent == False:
+                                        print('sent end of sweep message')
+                                        message = [2,0,0] # first digit: 0 - robot's coordinates, 1 - block coordinates , 2- done sweeping/collecting #2nd and 3rd digit: dummy values
+                                        message = struct.pack("3f", *message)
+                                        reverse_coords = calc_reverse_coords(current_coordinates, current_bearing)
+                                        path = np.vstack([path, reverse_coords])
+                                        a+=1
+                                        emitter.send(message)
+                                        end_of_sweep_message_sent = True
+                                else:
+                                    a+=1
 
                             destination = path[a+2]
                             path = get_total_path(current_coordinates,ox,oy,destination,path,a, show_animation=False)
@@ -250,7 +261,18 @@ while robot.step(TIME_STEP) != -1:
                             oy.append(round(block_coords[0]*100))
 
                             while np.linalg.norm(np.array(block_coords) - np.array(path[a+2])) < 0.2:
-                                a+=1
+                                if a == len(path)-3:
+                                    if end_of_sweep_message_sent == False:
+                                        print('sent end of sweep message')
+                                        message = [2,0,0] # first digit: 0 - robot's coordinates, 1 - block coordinates , 2- done sweeping/collecting #2nd and 3rd digit: dummy values
+                                        message = struct.pack("3f", *message)
+                                        reverse_coords = calc_reverse_coords(current_coordinates, current_bearing)
+                                        path = np.vstack([path, reverse_coords])
+                                        a+=1
+                                        emitter.send(message)
+                                        end_of_sweep_message_sent = True
+                                else:
+                                    a+=1
 
                             destination = path[a+2]
                             path = get_total_path(current_coordinates,ox,oy,destination,path,a, show_animation=False)
@@ -286,7 +308,18 @@ while robot.step(TIME_STEP) != -1:
                 ox.append(round(block_coords[1]*100))
                 oy.append(round(block_coords[0]*100))
                 while np.linalg.norm(np.array(block_coords) - np.array(path[a+2])) < 0.2:
-                    a+=1
+                    if a == len(path)-3:
+                        if end_of_sweep_message_sent == False:
+                            print('sent end of sweep message')
+                            message = [2,0,0] # first digit: 0 - robot's coordinates, 1 - block coordinates , 2- done sweeping/collecting #2nd and 3rd digit: dummy values
+                            message = struct.pack("3f", *message)
+                            reverse_coords = calc_reverse_coords(current_coordinates, current_bearing)
+                            path = np.vstack([path, reverse_coords])
+                            a+=1
+                            emitter.send(message)
+                            end_of_sweep_message_sent = True
+                    else:
+                        a+=1
 
                 destination = path[a+2]
                 path = get_total_path(current_coordinates,ox,oy,destination,path,a,show_animation = False)
@@ -313,37 +346,49 @@ while robot.step(TIME_STEP) != -1:
                 destination = path[a+2]
                 path = get_total_path(current_coordinates,ox,oy,destination,path,a, show_animation = False)
                 
-    elif distance_btw_robots <= 2*0.2 and getting_away == False:
+    elif distance_btw_robots <= 2*0.22 and getting_away == False:
         print('B too close')
-        if started_collecting == False: #if both robots sweeping or red robot collecting, just let the red robot avoid it
+        if other_robot_done == False: #if both robots sweeping or red robot collecting, just let the red robot avoid it
             leftSpeed, rightSpeed = 0,0
+
         else: #if blue robot collecting
             getting_away = True
 
             #create a square of obstacles for the robot
-            for i in range(round(other_robot_coordinates[1]*100)-7,round(other_robot_coordinates[1]*100)+8,2): 
+            for i in range(round(other_robot_coordinates[1]*100)-20,round(other_robot_coordinates[1]*100)+21,2): 
                 ox.append(i)
-                oy.append(round(other_robot_coordinates[0]*100)-7)
+                oy.append(round(other_robot_coordinates[0]*100)-20)
                 ox.append(i)
-                oy.append(round(other_robot_coordinates[0]*100)+7)
+                oy.append(round(other_robot_coordinates[0]*100)+20)
 
-            for i in range(round(other_robot_coordinates[0]*100)-7,round(other_robot_coordinates[0]*100)+8,2): 
+            for i in range(round(other_robot_coordinates[0]*100)-20,round(other_robot_coordinates[0]*100)+21,2): 
                 oy.append(i)
-                ox.append(round(other_robot_coordinates[1]*100)-7)
+                ox.append(round(other_robot_coordinates[1]*100)-20)
                 oy.append(i)
-                ox.append(round(other_robot_coordinates[1]*100)+7)
+                ox.append(round(other_robot_coordinates[1]*100)+20)
 
             while np.linalg.norm(np.array(other_robot_coordinates) - np.array(path[a+2])) < 0.4:
                 # if list(path[a+2]) in list_of_blocks:
                 #     path = np.append(path, np.array([path[a+2]]), axis = 0) # append that point to the back
-                a+=1
+                if a == len(path)-3:
+                    if end_of_sweep_message_sent == False:
+                        print('sent end of sweep message')
+                        message = [2,0,0] # first digit: 0 - robot's coordinates, 1 - block coordinates , 2- done sweeping/collecting #2nd and 3rd digit: dummy values
+                        message = struct.pack("3f", *message)
+                        reverse_coords = calc_reverse_coords(current_coordinates, current_bearing)
+                        path = np.vstack([path, reverse_coords])
+                        a+=1
+                        emitter.send(message)
+                        end_of_sweep_message_sent = True
+                else:
+                    a+=1
                 
 
             destination = path[a+2]
             path = get_total_path(current_coordinates,ox,oy,destination,path,a,show_animation = True)
             desired_coordinates = path[a+2]
             leftSpeed, rightSpeed, a = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, a)
-            for i in range(32):
+            for i in range(84):
                 ox.pop(-1)
                 oy.pop(-1)
     

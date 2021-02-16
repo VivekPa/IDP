@@ -85,7 +85,6 @@ def findpath(sx,sy,gx,gy,ox,oy,show_animation, robot_radius):
     else:
         nrx, nry = get_corners(rx, ry)
 
-    print(nrx, nry)
     if show_animation:  # pragma: no cover
         plt.plot(rx, ry, "-r")
         plt.plot(nrx, nry, ".b")

@@ -36,7 +36,7 @@ with open(filename, 'r') as csvfile:
         path = np.vstack([path, point])
         og_path.append(list_point)
 
-timeout = 300    # Simulation time in seconds when robot quits everything to go home
+timeout = 270    # Simulation time in seconds when robot quits everything to go home
 #endregion
 """Path Planning Variables"""
 
@@ -48,7 +48,7 @@ gy = 100 # [cm]
 
 # set obstacle positions
 ox, oy = [], []
-exceed= 2 #12.5 - 7.5
+exceed= 10 #12.5 - 7.5
 #wall boundaries
 for i in range(-120-exceed, 121+exceed):
     ox.append(i)
@@ -77,12 +77,14 @@ getting_away = False
 other_robot_done = False
 started_collecting = False
 robot_final_done = False
+end_of_collection_message_sent = False
 
 #endregion
 
 """Miscellaneous Variables"""
 #region
 deg2rad     = 3.14159/180
+num_blocks_collected = 0
 #endregion
 
 """Constant Variables"""
