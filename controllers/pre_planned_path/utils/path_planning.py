@@ -51,10 +51,10 @@ def get_corners(rx, ry): #for movement with diagonals
     return nrx, nry
 
 def findpath(sx,sy,gx,gy,ox,oy,show_animation, robot_radius):
-    
+
     grid_size = 5  # [cm]
     #robot_radius = 12.5 + 5  + 2# [cm]
-    
+
     if show_animation:  # pragma: no cover
         fig, ax = plt.subplots(1,1,figsize=(8,8))
         plt.ylim((-ARENA_WIDTH/2, ARENA_WIDTH/2))
@@ -64,7 +64,7 @@ def findpath(sx,sy,gx,gy,ox,oy,show_animation, robot_radius):
         arena_patch = Rectangle((-ARENA_WIDTH/2, -ARENA_WIDTH/2), width = ARENA_WIDTH, height = ARENA_WIDTH, alpha = 0.5, fc = 'gray', ec = 'k', linestyle = '-', linewidth = 2.0)
         red_patch   = Rectangle((ARENA_WIDTH/2-HOME_WIDTH, ARENA_WIDTH/2-HOME_WIDTH), width = HOME_WIDTH, height = HOME_WIDTH, alpha = 0.5, fc = 'r')
         blue_patch   = Rectangle((-ARENA_WIDTH/2, ARENA_WIDTH/2-HOME_WIDTH), width = HOME_WIDTH, height = HOME_WIDTH, alpha =0.5, fc = 'b')
-        
+
         ax.add_patch(arena_patch)
         ax.add_patch(red_patch)
         ax.add_patch(blue_patch)
@@ -107,7 +107,7 @@ def get_total_path(current_coordinates,ox,oy,destination,path,a,show_animation=T
     for i in range(len(nrx)):
         new_coordinates= np.array([nry[i]/100,nrx[i]/100])
         path = np.insert(path, a+2+i, new_coordinates, axis = 0)
-    
+
     return path
 
 def find_bearing(relative_vector):
