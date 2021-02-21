@@ -31,7 +31,7 @@ GPS coordinates have their origin in the centre of the arena, which is on the x-
     └── controllers                             <- controller code for this project
         ├── blue_controller                     <- controller for the blue robot. Has the same structure as pre_planned_path
         │
-        ├── pre_planned_path                    <- controller for the red robot
+        └── pre_planned_path                    <- controller for the red robot
             ├── pre_planned_path.py             <- main controller file
             ├── paths
             |   └── horizontal_traverse.txt     <- text file containing the pre-determined path
