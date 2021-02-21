@@ -43,7 +43,7 @@ GPS coordinates have their origin in the centre of the arena, which is on the x-
                 ├── motion_api.py               <- Functions which govern the robots’ motion 
                 ├── obstacle_detection.py       <- Functions which govern the detection and location of obstacles 
                 ├── path_planning.py            <- Functions which govern the planning of routes around the map and generate sets of 
-                |                                   coordinates to do so without collision. Uses astarplanner 
+                |                                  coordinates to do so without collision. Uses astarplanner 
                 ├── sensors_api.py              <- Functions which govern the retrieval and processing of data from the sensor nodes 
                 └── variables.py                <- Declaration of the variables used throughout the program. 
 
