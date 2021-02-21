@@ -13,7 +13,7 @@ Integrated Design Project
 | Reciever  | `receiver`  |
 
 The compass is mounted such that the y-axis points up in the ENU coordinate system. (i.e. north points in the negative x axis).
-GPS coordinates have their origin in the centre of the arena, which is on the x-z plane. `get_gps_xz` is used to obtain only the x,z coordinate values. 
+GPS coordinates have their origin in the centre of the arena, which is on the x-z plane.
 
 ## Functions
 | Function  |  Descriptions  |
