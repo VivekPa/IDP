@@ -18,7 +18,7 @@ The compass is mounted such that the y-axis points up in the ENU coordinate syst
 GPS coordinates have their origin in the centre of the arena, which is on the x-z plane.
 
 ## Folder Structure
-"""
+
     ├── README.md                               <- The top-level README for using this project.
     │
     ├── protos                                  <- Webot models
@@ -43,7 +43,7 @@ GPS coordinates have their origin in the centre of the arena, which is on the x-
                 └── path_planning.py            <- Functions required to plan paths, uses astarplanner
                 └── sensors_api.py              <- Functions related to usage of distance sensors, camers, compass and gps
                 └── variables.py                <- Initializes the required variables
-"""
+
        
 ## References
 Parts of this code are based on PythonRobotics https://github.com/AtsushiSakai/PythonRobotics
