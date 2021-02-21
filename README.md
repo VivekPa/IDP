@@ -39,12 +39,12 @@ GPS coordinates have their origin in the centre of the arena, which is on the x-
             |   └── horizontal_traverse.txt     <- text file containing the pre-determined path
             └── utils
                 └── __init__.py                 <- Makes utils a Python module
-                └── astarplanner.py             <- Astar path planning code from PythonRobotics
-                └── motion_api.py               <- Functions related to movement
-                └── obstacle_detection.py       <- Functions related to detection of obstacles
-                └── path_planning.py            <- Functions required to plan paths, uses astarplanner
-                └── sensors_api.py              <- Functions related to usage of distance sensors, camers, compass and gps
-                └── variables.py                <- Initializes the required variables
+                └── astarplanner.py             <- AStarPlanner class referenced from PythonRobotics
+                └── motion_api.py               <- Functions which govern the robots’ motion 
+                └── obstacle_detection.py       <- Functions which govern the detection and location of obstacles 
+                └── path_planning.py            <- Functions which govern the planning of routes around the map and generate sets of coordinates to do so without collision 
+                └── sensors_api.py              <- Functions which govern the retrieval and processing of data from the sensor nodes 
+                └── variables.py                <- Declaration of the variables used throughout the program. 
 
        
 ## References
