@@ -419,7 +419,7 @@ while robot.step(TIME_STEP) != -1:
                     
 
                 destination = path[a+2]
-                path = get_total_path(current_coordinates,ox,oy,destination,path,a,show_animation = True)
+                path = get_total_path(current_coordinates,ox,oy,destination,path,a,show_animation = False)
                 #get_total_path(current_coordinates,ox,oy,destination,path,a,show_animation=True,robot_radius=19.5) #can change robot radius so that there is a larger buffer but risk no paths
                 desired_coordinates = path[a+2]
                 leftSpeed, rightSpeed, a = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, a)

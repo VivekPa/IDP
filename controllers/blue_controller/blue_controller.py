@@ -385,7 +385,7 @@ while robot.step(TIME_STEP) != -1:
                 
 
             destination = path[a+2]
-            path = get_total_path(current_coordinates,ox,oy,destination,path,a,show_animation = True)
+            path = get_total_path(current_coordinates,ox,oy,destination,path,a,show_animation = False)
             desired_coordinates = path[a+2]
             leftSpeed, rightSpeed, a = moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, a)
             for i in range(84):

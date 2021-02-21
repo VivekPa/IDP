@@ -18,8 +18,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.4453883008442698 -0.7884665113037829 -0.4242049292776969 1.837900022232892
-  position -3.3840042403444293 5.702073546417302 -0.23547542858694975
+  orientation -0.40028754461158045 -0.838594635424262 -0.3694981990030275 1.8273825403836177
+  position -4.615384121310521 6.104294326877438 -0.5627656368122218
 }
 TexturedBackground {
 }
@@ -31,7 +31,7 @@ Floor {
   }
 }
 DEF Block_R1 Solid {
-  translation -0.836846 0.05 -0.298226
+  translation 0.7396 0.05 1.0751
   children [
     DEF BOX_R Shape {
       appearance PBRAppearance {
@@ -50,17 +50,9 @@ DEF Block_R1 Solid {
   }
 }
 DEF Block_R2 Solid {
-  translation 0.257148 0.05 -0.42226
+  translation 0.977 0.05 0.6057
   children [
-    DEF BOX_R Shape {
-      appearance PBRAppearance {
-        baseColor 1 0 0
-        metalness 0
-      }
-      geometry Box {
-        size 0.05 0.05 0.05
-      }
-    }
+    USE BOX_R
   ]
   name "solid(13)"
   boundingObject USE BOX_R
@@ -68,8 +60,7 @@ DEF Block_R2 Solid {
   }
 }
 DEF Block_R3 Solid {
-  translation -0.348609 0.05 0.875569
-  rotation 0 1 0 -0.785395307179586
+  translation -0.8766 0.05 -0.8046
   children [
     USE BOX_R
   ]
@@ -79,8 +70,7 @@ DEF Block_R3 Solid {
   }
 }
 DEF Block_R4 Solid {
-  translation 0.474761 0.05 0.518483
-  rotation 0 1 0 1.309
+  translation -0.1839 0.05 0.42
   children [
     USE BOX_R
   ]
@@ -88,13 +78,9 @@ DEF Block_R4 Solid {
   boundingObject USE BOX_R
   physics Physics {
   }
-  recognitionColors [
-    1 0 0
-  ]
 }
 DEF Block_B1 Solid {
-  translation 0.351561 0.05 -0.716623
-  rotation 0 1 0 1.0472
+  translation 0.274901 0.05 1.05333
   children [
     DEF BOX_B Shape {
       appearance PBRAppearance {
@@ -112,7 +98,7 @@ DEF Block_B1 Solid {
   }
 }
 DEF Block_B2 Solid {
-  translation -1.11795 0.05 0.887004
+  translation -0.9458 0.05 -0.0344
   children [
     USE BOX_B
   ]
@@ -122,7 +108,7 @@ DEF Block_B2 Solid {
   }
 }
 DEF Block_B3 Solid {
-  translation -1.11807 0.05 0.296475
+  translation -0.5205 0.05 0.7057
   children [
     USE BOX_B
   ]
@@ -132,8 +118,7 @@ DEF Block_B3 Solid {
   }
 }
 DEF Block_B4 Solid {
-  translation 0.88072 0.05 -0.275483
-  rotation 1 0 0 0.261799
+  translation 0.1102 0.05 -0.8416
   children [
     USE BOX_B
   ]
@@ -212,7 +197,7 @@ DEF WALL_4 Solid {
   name "solid(3)"
   boundingObject USE WALL_SHAPE
 }
-BlueHippo {
-}
 RedHippo {
+}
+BlueHippo {
 }
