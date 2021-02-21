@@ -12,6 +12,11 @@ block_width = 5
 pass_distance = 0.12
 
 def remove_redundant(xc, yc): #for straight movement
+    """
+    A function which removes redundant points for straight movement.
+    Arguments: x_coords, y_coords (all points along the path)
+    Returns: xc, yc (only the necessary points)
+    """
         xc = xc.copy()
         yc = yc.copy()
         i = 0
@@ -26,6 +31,11 @@ def remove_redundant(xc, yc): #for straight movement
         return xc, yc
 
 def get_corners(rx, ry): #for movement with diagonals
+    """
+    A function which removes redundant points for movement with diagonals.
+    Arguments: x_coords, y_coords (all points along the path)
+    Returns: nrc, nry (only the necessary points)
+    """
     nrx, nry = [], []
     for idx,value in enumerate(rx):
         if idx == len(rx)-1:
@@ -35,12 +45,10 @@ def get_corners(rx, ry): #for movement with diagonals
         else:
             diff_x = rx[idx+1]-rx[idx]
             diff_y = ry[idx+1]-ry[idx]
-            #print(diff_x,diff_y)
+            
             if value == rx[idx-1] and value == rx[idx+1]:
-                #print(value,ry[idx])
                 continue
             elif ry[idx] == ry[idx-1] and ry[idx] == ry[idx+1]:
-                #print(value,ry[idx])
                 continue
             elif  (diff_x != 0.0 and rx[idx]-rx[idx-1] == diff_x) and (diff_y != 0.0 and ry[idx]-ry[idx-1] == diff_y):
                 continue
@@ -51,7 +59,11 @@ def get_corners(rx, ry): #for movement with diagonals
     return nrx, nry
 
 def findpath(sx,sy,gx,gy,ox,oy,show_animation, robot_radius):
-    
+    """
+    A function that uses astarplanner to plan the path out
+    Arguments:  starting location, end location, location of obstacles, and robot_radius
+    Returns: nrc, nry
+    """
     grid_size = 5  # [cm]
     #robot_radius = 12.5 + 5  + 2# [cm]
     
@@ -94,6 +106,11 @@ def findpath(sx,sy,gx,gy,ox,oy,show_animation, robot_radius):
     return nrx,nry
 
 def get_total_path(current_coordinates,ox,oy,destination,path,a,show_animation=True,robot_radius=19.5):
+    """
+    A function that sets the starting and desired locations and uses findpath (above function) to plan the path out and add it to the original path
+    Arguments: current coordinates, location of obstacles, desired location, origina path and robot_radius
+    Returns: path
+    """
 # start and goal position
     sx = round(current_coordinates[1]*100)  # [cm]
     sy = round(current_coordinates[0]*100)  # [cm]
@@ -112,6 +129,7 @@ def get_total_path(current_coordinates,ox,oy,destination,path,a,show_animation=T
 def find_bearing(relative_vector):
     """
     This function returns the bearing of a vector from North.
+    Returns: bearing
     """
     acw_from_x = np.arctan2(relative_vector[1], relative_vector[0]) / deg2rad
     bearing = (-1) * acw_from_x
@@ -124,39 +142,12 @@ def find_intersection(a,b,c,d):
     px = ((a[1]*b[0]-a[0]*b[1])*(c[0]-d[0])-(a[0]-b[0])*(c[1]*d[0]-c[0]*d[1])) / ((a[1]-b[1])*(c[0]-d[0])-(a[0]-b[0])*(c[1]-d[1]))
     return px,pz
 
-def find_point_round_block(current_coords, desired_coords, direction_vector, block_coords, leftright):
-    """
-    Function that finds the point to avoid a block tangentially
-    """
-    #find the bearing of the tangent
-    block_vector1 = block_coords - current_coords
-    d1_block = np.linalg.norm(block_vector1)
-    tangent_angle1 = leftright * np.arcsin(pass_distance / d1_block) / deg2rad
-    tangent_bearing1 = find_bearing(block_vector1) + tangent_angle1
-
-    #find an arbitrary point on the tangent line
-    tangent_point1_x = current_coords[0] + np.cos(tangent_bearing1 * deg2rad)
-    tangent_point1_z = current_coords[1] + np.sin(tangent_bearing1 * deg2rad)
-    tangent_point1 = np.array([tangent_point1_x, tangent_point1_z])
-
-    #now repeat from the other side
-    block_vector2 = block_coords - desired_coords
-    d2_block = np.linalg.norm(block_vector2)
-    tangent_angle2 = leftright/abs(leftright) * np.arcsin(pass_distance / d1_block) / deg2rad
-    tangent_bearing2 = find_bearing(block_vector2) - tangent_angle2
-    print('2 quantities are', block_vector2, d2_block, tangent_angle2, tangent_bearing2)
-
-    #find an arbitrary point on this tangent line
-    tangent_point2_x = desired_coords[0] + np.cos(tangent_bearing2 * deg2rad)
-    tangent_point2_z = desired_coords[1] + np.sin(tangent_bearing2 * deg2rad)
-    tangent_point2 = np.array([tangent_point2_x, tangent_point2_z])
-
-    #the intersection of the two tangents is
-    intersection_x, intersection_z = find_intersection(current_coords, tangent_point1, desired_coords, tangent_point2)
-    target_coords = np.array([intersection_x, intersection_z])
-    return target_coords
-
 def check_next_point(current_coords, desired_coords, check_distance, other_colour_blocks):
+    """
+    This function check if there is an obstacle along the path
+    Arguments: current_coords, desired_coords, check_distance, other_colour_blocks
+    Returns: block (Boolean, true if there is obstacle)
+    """
     #define path step
     path_step = 0.0015
     #find vector of travel

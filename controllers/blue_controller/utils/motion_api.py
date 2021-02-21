@@ -6,21 +6,21 @@ from .variables import deg2rad, block_width, wall_list_x, other_colour_blocks, h
 
 def bearing_round(bearing, base = 90):
     """
-    Returns the bearing rounded to the nearest 90 degrees.
+    A functioon which returns the bearing rounded to the nearest 90 degrees.
+
+    Returns: rounded_bearing
     """
     rounded_bearing = base * round(bearing / base)
     return rounded_bearing
 
 def getDistanceandRotation(subpath):
     """
-    Returns the distance between the next point and current point and rotation needed to align with the new direction.
+    A function which returns the distance between the next point and current point and rotation needed to align with the new direction.
 
     Arguments: Accepts a ndarray of length  3
     [[prev point],[current point],[next point]]
+    Returns: distance, angle
     """
-    # print(np.round(subpath[0]))
-    # print(np.round(subpath[1]))
-    # print(np.round(subpath[2]))
 
     prev_vector = subpath[1] - subpath[0]
     new_vector = subpath[2] - subpath[1]
@@ -56,7 +56,7 @@ def getDistanceandRotation(subpath):
 
 def moveTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, a):
     """
-    Returns the leftSpeed and rightSpeed to move it in the correct direction and new a if it reaches the desired coordinate
+    A function which returns the leftSpeed and rightSpeed to move it in the correct direction and new a if it reaches the desired coordinate
 
     Arguments: previous_coordinates, current_coordinates, desired_coordinates, current_bearing, a
     Returns: leftSpeed, rightSpeed, a
@@ -71,13 +71,9 @@ def moveTo(previous_coordinates, current_coordinates, desired_coordinates, curre
     ref_coordinates = [current_coordinates[0]+1, current_coordinates[1]] # to make previous vector always be [-1,0]
     coordinates_list2 = [ref_coordinates,current_coordinates,desired_coordinates]
     angle = getDistanceandRotation(coordinates_list2)[1]
-    # print('angle',angle)
     desired_bearing = angle + 180
 
-    # print(i,distance, desired_bearing)
-    # print('desired bearing', desired_bearing)
     bearing_error = desired_bearing - current_bearing
-    # print('bearing error', bearing_error)
 
     # bearing +- 180 to get the smallest bearing error in the correct direction
     if bearing_error > 180:
@@ -107,7 +103,7 @@ def moveTo(previous_coordinates, current_coordinates, desired_coordinates, curre
 
 def rotateTo(previous_coordinates, current_coordinates, desired_coordinates, current_bearing, alignment):
     """
-    Returns the leftSpeed and rightSpeed to rotate it to face the next coordinates
+    A function which returns the leftSpeed and rightSpeed to rotate it to face the next coordinates and new A if it is aligned
 
     Arguments: previous_coordinates, current_coordinates, desired_coordinates, current_bearing, a
     Returns: leftSpeed, rightSpeed, a
@@ -116,13 +112,9 @@ def rotateTo(previous_coordinates, current_coordinates, desired_coordinates, cur
     ref_coordinates = np.array([current_coordinates[0]+1, current_coordinates[1]]) # to make previous vector always be [-1,0,0]
     coordinates_list2 = [ref_coordinates,current_coordinates,desired_coordinates]
     angle = getDistanceandRotation(coordinates_list2)[1]
-    # print('angle',angle)
     desired_bearing = angle + 180
 
-    # print(i,distance, desired_bearing)
-    #print('desired bearing', desired_bearing)
     bearing_error = desired_bearing - current_bearing
-    #print('bearing error', bearing_error)
 
     # bearing +- 180 to get the smallest bearing error in the correct direction
     if bearing_error > 180:
@@ -134,7 +126,6 @@ def rotateTo(previous_coordinates, current_coordinates, desired_coordinates, cur
         leftSpeed  = 0
         rightSpeed = 0
         alignment = True
-        # print('aligned')
     elif bearing_error >= 0.5: #rotate right to reduce bearing error
         leftSpeed  = 0.5 * MAX_SPEED
         rightSpeed = -0.5 * MAX_SPEED
@@ -146,7 +137,7 @@ def rotateTo(previous_coordinates, current_coordinates, desired_coordinates, cur
 
 def reverseTo(previous_coordinates, current_coordinates, reverse_coords, a):
     """
-    Returns the leftSpeed and rightSpeed to reverse until it reaches the required coords
+    A function that returns the leftSpeed and rightSpeed to reverse until it reaches the required coords and new a once it reaches the point
 
     Arguments: previous_coordinates, current_coordinates, desired_coordinates, a
     Returns: leftSpeed, rightSpeed, a
@@ -167,7 +158,7 @@ def reverseTo(previous_coordinates, current_coordinates, reverse_coords, a):
 
 def calc_reverse_coords(current_coordinates, current_bearing):
     """
-    Calculates the coordinates it needs to reverse to when wanting unload
+    A function that calculates the coordinates it needs to reverse to when wanting to unload
     Arguments: current_coordinates, current_bearing
     Returns: reverse_coords
     """
@@ -178,19 +169,19 @@ def calc_reverse_coords(current_coordinates, current_bearing):
     desired_bearing = desired_bearing * (deg2rad)
     reverse_coords = np.array([ current_coordinates[0] + 0.4*np.cos(desired_bearing),
                                 current_coordinates[1] + 0.4*np.sin(desired_bearing)])
+
     wall_coord = wall_list_x[1]
     obstacle_tolerance = 0.06
     lower_wall = wall_coord - obstacle_tolerance
     upper_wall = wall_coord + obstacle_tolerance
     
     if lower_wall <= abs(reverse_coords[0]) <= upper_wall or lower_wall <= abs(reverse_coords[1]) <= upper_wall:
-        #reverse_coords = np.array([0.551,1.12])
         reverse_coords = np.array([1.14,-0.583])
     return reverse_coords
 
 def calc_collection_coords(block_coords, current_bearing):
     """
-    Calculates the coordinates it needs to move to collect the block (slightly further than block coords)
+    A function that calculates the coordinates it needs to move to collect the block (did not use it in the end)
     Arguments: block_coords, current_bearing
     Returns: collection_coords
     """
@@ -200,16 +191,4 @@ def calc_collection_coords(block_coords, current_bearing):
                                 block_coords[1] + offset_distance*np.sin(desired_bearing)])
 
     return collection_coords
-
-def unload():
-    """
-    This function allows the collected block to be unloaded by:
-        * Moving the robot back by __ distance
-        * rotate to next waypoint
-    """
-    leftSpeed  = -0.5 * MAX_SPEED
-    rightSpeed = -0.5 * MAX_SPEED
-
-    return leftSpeed, rightSpeed
-
 

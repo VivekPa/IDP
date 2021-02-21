@@ -44,21 +44,18 @@ def ds_read(ds_object, ds_value=0):
 
 def getRGB(camera_left, camera_right):
     """
-    Returns: integer cooresponding to colour with largest pixel value as well individual pixel values
+    A function that returns the integer corresponding to colour detected by the camera sensors
         0: red
         1: green
         2: blue
+        None: one red and one blue
+    
+    Returns: colour
     """
-    #red   = RGB[0]
-    #green = RGB[1]
-    #blue  = RGB[2]
-
     image_left = camera_left.getImageArray()
     image_right = camera_right.getImageArray()
     RGB_left = image_left[0][0]
     RGB_right = image_right[0][0]
-    # print(RGB_left)
-    # print(RGB_right)
     colour_left = RGB_left.index(max(RGB_left))
     colour_right = RGB_right.index(max(RGB_right))
     if colour_left == colour_right:
@@ -72,38 +69,26 @@ def getRGB(camera_left, camera_right):
         else:
             colour = colour_left
 
-    return colour  #, red, green, blue
-
-# def getRGB(camera):
-#     """
-#     Returns: integer cooresponding to colour with largest pixel value as well individual pixel values
-#         0: red
-#         1: green
-#         2: blue
-#     """
-#     #red   = RGB[0]
-#     #green = RGB[1]
-#     #blue  = RGB[2]
-
-#     image= camera.getImageArray()
-#     RGB = image[0][0]
-#     colour = RGB.index(max(RGB))
-
-#     return colour  #, red, green, blue
+    return colour
 
 def getBearing(compass):
     """
-    Returns the bearing based off the compass north reading
+    A function that returns the bearing based off the compass north reading
+    Returns: bearing
     """
     compassData = compass.getValues()
     rad = math.atan2(compassData[0], compassData[2])
     bearing = (rad - math.pi/2)/math.pi * 180
     if bearing < 0.0:
         bearing = bearing + 360.0
-    #print(bearing)
     return bearing
 
 def getCoordinates(gps):
+    """
+    A function that reduce the dimensions of the coordinates from 3 to 2
+    Returns: xz coordinates
+    """
     xyz     = np.array(gps.getValues())
     xz      = np.delete(xyz, 1, axis=0)
     return xz
+
