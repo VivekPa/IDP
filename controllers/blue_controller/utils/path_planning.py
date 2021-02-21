@@ -138,6 +138,11 @@ def find_bearing(relative_vector):
     return bearing
 
 def find_intersection(a,b,c,d):
+    """"
+    Returns the intersection coordinates of a pair of 2D lines.
+
+    Arguments: a, b (two arbitrary points on one line), c, d (two arbitrary points on the other line)
+    """
     pz = ((a[1]*b[0]-a[0]*b[1])*(c[1]-d[1])-(a[1]-b[1])*(c[1]*d[0]-c[0]*d[1])) / ((a[1]-b[1])*(c[0]-d[0])-(a[0]-b[0])*(c[1]-d[1]))
     px = ((a[1]*b[0]-a[0]*b[1])*(c[0]-d[0])-(a[0]-b[0])*(c[1]*d[0]-c[0]*d[1])) / ((a[1]-b[1])*(c[0]-d[0])-(a[0]-b[0])*(c[1]-d[1]))
     return px,pz
